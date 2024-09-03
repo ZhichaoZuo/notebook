@@ -323,7 +323,7 @@ int findContentChildren(vector<int>& g, vector<int>& s) {
 }
 ```
 
-2. [最大字数组和](https://leetcode.cn/problems/maximum-subarray/)
+2. [最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
 
 > 给你一个整数数组 `nums` ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。**子数组**是数组中的一个连续部分。
 
@@ -572,7 +572,6 @@ vector<int> partitionLabels(string s) {
 解释：如图所示，一台摄像头足以监控所有节点
 ```
 
-```c++
 class Solution {
 public:
     int dfs(TreeNode* root, int& count){
@@ -581,6 +580,7 @@ public:
         int left = dfs(root->left, count);
         int right = dfs(root->right, count);
 /*
+
 * return 0; 此节点无监控，无需监控
 * return 1; 此节点无监控，需监控
 * return 2; 此节有监控
@@ -592,11 +592,41 @@ public:
             return 2;
         }
 
-        return 0;
+  ​      return 0;
     }
     int minCameraCover(TreeNode* root) {
-        int count = 0;
-        return dfs(root, count) == 1 ? count + 1 : count;
+  ​      int count = 0;
+  ​      return dfs(root, count) == 1 ? count + 1 : count;
+    }
+};
+
+11. [无重叠区间](https://leetcode.cn/problems/non-overlapping-intervals/)
+
+> 给定一个区间的集合 `intervals` ，其中 `intervals[i] = [starti, endi]` 。返回 *需要移除区间的最小数量，使剩余区间互不重叠* 。
+
+```
+输入: intervals = [[1,2],[2,3],[3,4],[1,3]]
+输出: 1
+解释: 移除 [1,3] 后，剩下的区间没有重叠。
+```
+
+```c++
+class Solution {
+public:
+    static bool cmp(vector<int>& a, vector<int>& b){          //记得添加static 
+        return a[1] < b[1];
+    }
+    int eraseOverlapIntervals(vector<vector<int>> intervals) {
+        int count = 1;           //记录一定需要的区间
+        sort(intervals.begin(), intervals.end(), cmp);     //按照结束时间排序
+        int end = intervals[0][1];
+        for(int i = 1; i < intervals.size(); i++){
+            if(intervals[i][0] >= end){       //一定出现了新的区间
+                count++;
+                end = intervals[i][1];
+            }
+        }
+        return intervals.size() - count;     
     }
 };
 ```
@@ -1848,9 +1878,19 @@ public:
 };
 ```
 
+### 九、图论
 
+图的构造：
 
-### 九、数论
+邻接矩阵
+
+```
+
+```
+
+邻接表
+
+### 十、数论
 
 1. 质数的判断
 
