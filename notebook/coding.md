@@ -151,7 +151,7 @@ int longest_non_decreasing_subsequence(vector<int> nums){
                 dp[i] = max(dp[i], dp[j] + 1);
             }
         }
-      res = max(res, dp[i]);
+        res = max(res, dp[i]);
     }
     return res;
 }
@@ -572,6 +572,7 @@ vector<int> partitionLabels(string s) {
 解释：如图所示，一台摄像头足以监控所有节点
 ```
 
+```c++
 class Solution {
 public:
     int dfs(TreeNode* root, int& count){
@@ -580,7 +581,6 @@ public:
         int left = dfs(root->left, count);
         int right = dfs(root->right, count);
 /*
-
 * return 0; 此节点无监控，无需监控
 * return 1; 此节点无监控，需监控
 * return 2; 此节有监控
@@ -592,13 +592,14 @@ public:
             return 2;
         }
 
-  ​      return 0;
+        return 0;
     }
     int minCameraCover(TreeNode* root) {
-  ​      int count = 0;
-  ​      return dfs(root, count) == 1 ? count + 1 : count;
+        int count = 0;
+        return dfs(root, count) == 1 ? count + 1 : count;
     }
-};
+  };
+```
 
 11. [无重叠区间](https://leetcode.cn/problems/non-overlapping-intervals/)
 
@@ -715,7 +716,7 @@ string removeDuplicates(string s) {
 >解释：
 >滑动窗口的位置                最大值
 >---------------               -----
->[1  3  -1] -3  5  3  6  7       3
+>[1  3  -1] -3  5  3  6  7      3
 > 1 [3  -1  -3] 5  3  6  7       3
 > 1  3 [-1  -3  5] 3  6  7       5
 > 1  3  -1 [-3  5  3] 6  7       5
@@ -736,7 +737,7 @@ vector<int> maxSlidingWindow(vector<int>& nums, int k) {
     res.push_back(q.top().first); //别忘了first/second,
     for(int i = k; i< n; i++){
         q.push({nums[i], i});
-        while(q.top().second <= i - k){    //需要循环！不只是if，清理优先队列中过期元素
+        while(q.top().second + k<= i){    //需要循环！不只是if，从大到小清理优先队列中过期元素
             q.pop();
         }
         res.push_back(q.top().first);
@@ -800,7 +801,7 @@ int main() {
 ### 四、数组
 
 1. 二分查找
-
+>
    > 给定一个 n 个元素有序的（升序）整型数组 nums 和一个目标值 target  ，写一个函数搜索 nums 中的 target，如果目标值存在返回下标，否则返回 -1。
    >
    > ```c++
@@ -827,7 +828,7 @@ int search(vector<int>& nums, int target) {
 ```
 
 2. [移除元素](https://leetcode.cn/problems/remove-element/)
-
+>
    > 给你一个数组 `nums` 和一个值 `val`，你需要 **[原地](https://baike.baidu.com/item/原地算法)** 移除所有数值等于 `val` 的元素。元素的顺序可能发生改变。然后返回 `nums` 中与 `val` 不同的元素的数量。
    >
    > ```c++
@@ -863,22 +864,22 @@ int removeElement(vector<int>& nums, int val) {
 > ⚠️：因为有正负，小值在中间，因此适合从两边找最大值进行排序，再逆转。
 
 ```c++
-    vector<int> sortedSquares(vector<int>& nums) {
-        vector<int> res;
-        int left = 0, right = nums.size()-1;
-        while(left<=right){
-            if(abs(nums[right]) > abs(nums[left])){
-                res.push_back(nums[right] * nums[right]);
-                right--;
-            }
-            else{                
-                res.push_back(nums[left] * nums[left]);
-                left++;
-            }
+vector<int> sortedSquares(vector<int>& nums) {
+    vector<int> res;
+    int left = 0, right = nums.size()-1;
+    while(left<=right){
+        if(abs(nums[right]) > abs(nums[left])){
+            res.push_back(nums[right] * nums[right]);
+            right--;
         }
-        reverse(res.begin(), res.end());
-        return res;
+        else{                
+            res.push_back(nums[left] * nums[left]);
+            left++;
+        }
     }
+    reverse(res.begin(), res.end());
+    return res;
+}
 ```
 
 4. [长度最小的子数组](https://leetcode.cn/problems/minimum-size-subarray-sum/)
@@ -923,41 +924,41 @@ int minSubArrayLen(int target, vector<int>& nums) {
 > ```c++
 > 输入：n = 3
 > 输出：[
->   	 		[1,2,3],
+>   	 	[1,2,3],
 >     		[8,9,4],
->   			[7,6,5]
-> 		 ]
+>   		[7,6,5]
+> 	 ]
 > ```
 
 ```c++
-   vector<vector<int>> generateMatrix(int n) {
-       vector<vector<int>> res(n, vector<int>(n));
-       int num = 1;
-       int left = 0, right = n-1, top = 0, bottom = n - 1;
-       while(left <= right && top <= bottom){
-           for(int j = left; j <= right; j++){ //上
-               res[top][j] = num;
-               num++;
-           }
-           for(int i = top + 1; i <= bottom; i++){  //右
-               res[i][right] = num;
-               num++;
-           }
-           for(int j = right - 1; j >= left; j--){  //下
-               res[bottom][j] = num;
-               num++;
-           }
-           for(int i = bottom - 1; i > top; i--){  //左，注意边界
-               res[i][left] = num;
-               num++;
-           }
-           left++;
-           right--;
-           top++;
-           bottom--;
-       }
-       return res;
-   }
+vector<vector<int>> generateMatrix(int n) {
+    vector<vector<int>> res(n, vector<int>(n));
+    int num = 1;
+    int left = 0, right = n-1, top = 0, bottom = n - 1;
+    while(left <= right && top <= bottom){
+        for(int j = left; j <= right; j++){ //上
+            res[top][j] = num;
+            num++;
+        }
+        for(int i = top + 1; i <= bottom; i++){  //右
+            res[i][right] = num;
+            num++;
+        }
+        for(int j = right - 1; j >= left; j--){  //下
+            res[bottom][j] = num;
+            num++;
+        }
+        for(int i = bottom - 1; i > top; i--){  //左，注意边界
+            res[i][left] = num;
+            num++;
+        }
+        left++;
+        right--;
+        top++;
+        bottom--;
+    }
+    return res;
+}
 ```
 
 6. 区间和
@@ -1108,7 +1109,7 @@ ListNode* swapPairs(ListNode* head) {
     ListNode *second = head->next;
     ListNode *third = second->next;
     second->next = first;
-    first->next = swapPairs(thir
+    first->next = swapPairs(third)
     return second;
 }
 ```
@@ -1330,7 +1331,7 @@ vector<int> twoSum(vector<int>& nums, int target) {
 将四个数组分成两部分，*A* 和 *B* 为一组，*C* 和 *D* 为另外一组。对于 A 和 B，我们使用二重循环对它们进行遍历，得到所有 A[i]+B[j] 的值并存入哈希映射中。对于哈希映射中的每个键值对，每个键表示一种 A[i]+B[j]，**对应的值为 A[i]+B[j] 出现的次数**。
 
 ```c++
-int fourSumCount(vector<int>& nums1, vector<int>& nums2, vector<int>& nums3, 	     vector<int>& nums4) {
+int fourSumCount(vector<int>& nums1, vector<int>& nums2, vector<int>& nums3, vector<int>& nums4) {
     int res = 0;
     unordered_map<int, int> m1, m2;
     int n = nums1.size();
@@ -1345,7 +1346,7 @@ int fourSumCount(vector<int>& nums1, vector<int>& nums2, vector<int>& nums3, 	  
             int sum = nums4[i] + nums3[j];
             auto it = m1.find(0-sum);
             if(it != m1.end())
-                res += it->second;
+                res += it->second;    //很重要，不是加一
         }
     }
     return res;
@@ -1382,6 +1383,72 @@ vector<vector<int>> threeSum(vector<int>& nums) {
     return res;
 }
 ```
+
+5. [字母异位词分组](https://leetcode.cn/problems/group-anagrams/)
+
+> 给你一个字符串数组，请你将 **字母异位词** 组合在一起。可以按任意顺序返回结果列表。**字母异位词** 是由重新排列源单词的所有字母得到的一个新单词。
+
+```c++
+输入: strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+输出: [["bat"],["nat","tan"],["ate","eat","tea"]]
+```
+
+```c++
+vector<vector<string>> groupAnagrams(vector<string>& strs) {
+    unordered_map<string, vector<string>> m;    //有序串为键，同属一个有序串为值
+    for(auto it : strs){
+        string key = it;
+        sort(key.begin(), key.end());         //构建有序串
+        m[key].push_back(it);
+    }
+    vector<vector<string>> res;
+    for(auto it : m){
+        res.push_back(it.second);
+    }
+    return res;
+}
+```
+
+6. [最长连续序列](https://leetcode.cn/problems/longest-consecutive-sequence/)
+
+> 给定一个未排序的整数数组 `nums` ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
+>
+> 请你设计并实现时间复杂度为 **`O(n)`** 的算法解决此问题。
+
+```c++
+输入：nums = [0,3,7,2,5,8,4,6,0,1]
+输出：9
+```
+
+```c++
+//考虑枚举数组中的每个数 x，考虑以其为起点，不断尝试匹配 x+1,x+2,⋯ 是否存在
+//重点是确定 起点！即num-1不在nums中。
+int longestConsecutive(vector<int>& nums) {
+    unordered_set<int> s;          //使用集合存储，用于去重
+    int longest = 0;
+    int curr = 0;
+    for(int num : nums){
+        s.insert(num);
+    }
+    for(int num : s){
+        if(s.count(num-1)){     //说明不是开头的
+            curr = 1;
+        }
+        else{
+            curr = 1;
+            int temp = num;         //从开头开始数
+            while(s.count(temp + 1)){
+                curr++;
+                temp++;
+            }
+        }
+        longest = max(longest, curr);     //更新
+    }
+    return longest;
+}
+```
+
+
 
 ### 七、二叉树
 
@@ -1480,7 +1547,8 @@ bool isBalanced(TreeNode* root) {
     if(root == nullptr)
         return true;
     else
-        return abs((height(root->left) - height(root->right))) <= 1 && 	                              isBalanced(root->left) && isBalanced(root->right);  //当前结点+递归左右！
+        //当前结点+递归左右子节点！
+        return abs((height(root->left) - height(root->right))) <= 1 && isBalanced(root->left) && isBalanced(root->right);  
 }
 ```
 
@@ -1878,19 +1946,314 @@ public:
 };
 ```
 
-### 九、图论
+### 九、矩阵
+
+1. 岛屿数量
+
+> 给你一个由 `'1'`（陆地）和 `'0'`（水）组成的的二维网格，请你计算网格中岛屿的数量。岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。此外，你可以假设该网格的四条边均被水包围。
+
+```c++
+输入：grid = [
+  ["1","1","0","0","0"],
+  ["1","1","0","0","0"],
+  ["0","0","1","0","0"],
+  ["0","0","0","1","1"]
+]
+输出：3
+```
+
+```c++
+void dfs(vector<vector<char>>& matrix, int i, int j){
+	if(i < 0 || i >=matrix.size() || j < 0 || j >= matrix[0].size()) //返回条件一：超出边界
+		return;
+	if(matrix[i][j] == '0')     //返回条件二：非岛屿，跳出递归
+		return;
+	matrix[i][j] = '0';        //表示岛屿已被访问
+	dfs(matrix, i+1, j);
+	dfs(matrix, i-1, j);
+	dfs(matrix, i, j+1);
+	dfs(matrix, i, j-1);
+}
+
+int main(){
+	int n, m;
+	int count = 0;
+	cin >> n >> m;
+	vector<vector<char>> matrix(n, vector<char>(m, '0')); 
+	for(int i = 0; i < n; i++){
+		for(int j = 0; j < n; j++){
+			cin >> matrix[i][j];
+		}
+	}
+	
+	for(int i = 0; i < matrix.size(); i++){
+		for(int j = 0; j < matrix[0].size(); j++){
+			if(matrix[i][j] == '1'){
+				dfs(matrix, i , j);
+				count++;        //每次新的深搜表示找到新的岛屿
+			}
+		}
+	}
+	cout << count << endl;
+	return 0;
+}  //返回条件一：超出边界
+```
+
+2. [封闭岛屿的数量](https://leetcode.cn/problems/number-of-closed-islands/)
+
+> 二维矩阵 `grid` 由 `0` （土地）和 `1` （水）组成。岛是由最大的4个方向连通的 `0` 组成的群，封闭岛是一个 `完全` 由1包围（左、上、右、下）的岛。
+>
+> 请返回 *封闭岛屿* 的数目。
+
+```c++
+输入：grid = [
+    [0,0,1,0,0],
+    [0,1,0,1,0],
+    [0,1,1,1,0]
+]
+输出：1
+```
+
+```c++
+//先从四条边开始，将所有非封闭的陆地排除（设为水），再重新遍历剩下的陆地（就是孤岛）
+class Solution {
+public:
+    void dfs(vector<vector<int>>& matrix, int i, int j) {
+        if (i < 0 || i >= matrix.size() || j < 0 || j >= matrix[0].size())
+            return;
+        if (matrix[i][j] == 1)
+            return;
+        matrix[i][j] = 1;
+        dfs(matrix, i + 1, j);
+        dfs(matrix, i - 1, j);
+        dfs(matrix, i, j + 1);
+        dfs(matrix, i, j - 1);
+    }
+    int closedIsland(vector<vector<int>>& matrix) {
+        int m = matrix.size(), n = matrix[0].size();
+        int count = 0;
+        for (int i = 0; i < m; i++) {
+            if (matrix[i][0] == 0)
+                dfs(matrix, i, 0);
+        }
+        for (int i = 0; i < m; i++) {
+            if (matrix[i][n - 1] == 0)
+                dfs(matrix, i, n - 1);
+        }
+        for (int j = 0; j < n; j++) {
+            if (matrix[0][j] == 0)
+                dfs(matrix, 0, j);
+        }
+        for (int j = 0; j < n; j++) {
+            if (matrix[m - 1][j] == 0)
+                dfs(matrix, m - 1, j);
+        }
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == 0) {
+                    dfs(matrix, i, j);
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+};
+
+```
+
+3. [岛屿的周长](https://leetcode.cn/problems/island-perimeter/)
+
+> 给定一个 `row x col` 的二维网格地图 `grid` ，其中：`grid[i][j] = 1` 表示陆地， `grid[i][j] = 0` 表示水域。
+>
+> 网格中的格子 **水平和垂直** 方向相连（对角线方向不相连）。整个网格被水完全包围，但其中恰好有一个岛屿（或者说，一个或多个表示陆地的格子相连组成的岛屿）。
+
+```c++
+输入：
+grid = [
+    [0,1,0,0],
+    [1,1,1,0],
+    [0,1,0,0],
+    [1,1,0,0]
+]
+输出：16
+
+输入：grid = [[1]]
+输出：4
+```
+
+```c++
+int islandPerimeter(vector<vector<int>>& grid) {
+    int m = grid.size(), n = grid[0].size();
+    int count = 0;
+    for(int i = 0; i < m; i++){
+        for(int j = 0; j < n; j++){
+            if(grid[i][j] == 1){
+                int origin = 4;      //默认每个岛初始周长都为4，但凡在某个方向和另一个岛屿有接触，那么边长就减一
+                if(i > 0 && grid[i-1][j] == 1) origin--;
+                if(i < m-1 && grid[i+1][j] == 1) origin--;
+                if(j > 0 && grid[i][j-1] == 1) origin--;
+                if(j < n-1 && grid[i][j+1] == 1) origin--;
+                count = count + origin;
+            }
+        }
+    }
+    return count;
+}
+```
+
+3. [最大正方形](https://leetcode.cn/problems/maximal-square/)
+
+> 在一个由 `'0'` 和 `'1'` 组成的二维矩阵内，找到只包含 `'1'` 的最大正方形，并返回其面积。
+
+```c++
+输入：matrix = [
+    ["1","0","1","0","0"],
+    ["1","0","1","1","1"],
+    ["1","1","1","1","1"],
+    ["1","0","0","1","0"]
+]
+输出：4
+```
+
+可以使用动态规划降低时间复杂度。我们用 dp(i,j) 表示以 (i,j) 为右下角，且只包含 1 的正方形的边长最大值。如果我们能计算出所有 dp(i,j) 的值，那么其中的最大值即为矩阵中只包含 1 的正方形的边长最大值，其平方即为最大正方形的面积。
+
+那么如何计算 dp 中的每个元素值呢？对于每个位置 (i,j)，检查在矩阵中该位置的值：
+
+- 如果该位置的值是 0，则 dp(i,j)=0，因为当前位置不可能在由 1 组成的正方形中；
+
+- 如果该位置的值是 1，则 dp(i,j) 的值由其上方、左方和左上方的三个相邻位置的 dp 值决定。具体而言，当前位置的元素值等于三个相邻位置的元素中的最小值加 1，状态转移方程如下：
+
+​												dp(i,j)=min(dp(i−1,j),dp(i−1,j−1),dp(i,j−1))+1
+
+此外，还需要考虑边界条件。如果 *i* 和 *j* 中至少有一个为 0，则以位置 (*i*,*j*) 为右下角的最大正方形的边长只能是 1，因此 *dp*(*i*,*j*)=1。
+
+```c++
+int maximalSquare(vector<vector<char>>& matrix) {
+    int res = 0;
+    int m = matrix.size(), n = matrix[0].size();
+    vector<vector<int>> dp(m+1, vector<int>(n+1, 0));
+    for(int i = 0; i < m; i++){
+        for(int j = 0; j < n; j++){
+            if(matrix[i][j] == '1'){
+                if(i == 0 || j == 0){
+                    dp[i][j] = 1;
+                }
+                else{
+                    dp[i][j] = min(min(dp[i-1][j], dp[i-1][j-1]),dp[i][j-1]) + 1;
+                }
+            }
+            res = max(res, dp[i][j]);
+        }
+    }
+    return res * res;
+}
+```
+
+4. [旋转矩阵](https://leetcode.cn/problems/rotate-image/)
+
+> 给定一个 *n* × *n* 的二维矩阵 `matrix` 表示一个图像。请你将图像顺时针旋转 90 度。
+>
+> 你必须在**[ 原地](https://baike.baidu.com/item/原地算法)** 旋转图像，这意味着你需要直接修改输入的二维矩阵。**请不要** 使用另一个矩阵来旋转图像。
+
+```c++
+输入：matrix = [
+    [1,2,3],
+    [4,5,6],
+    [7,8,9]
+]
+输出：[
+    [7,4,1],
+    [8,5,2],
+    [9,6,3]
+]
+```
+
+```c++
+void rotate(vector<vector<int>>& matrix) {
+    int n = matrix.size();
+    for(int i = 0; i < n/2; i++){     //先水平翻转
+        swap(matrix[i], matrix[n-i-1]);
+    }
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < i; j++){
+            swap(matrix[i][j], matrix[j][i]);    //再转置，沿主对角线翻转
+        }
+    }
+    return;
+}
+```
+
+5. [搜索二维矩阵II](https://leetcode.cn/problems/search-a-2d-matrix-ii/)
+
+> 编写一个高效的算法来搜索 `*m* x *n*` 矩阵 `matrix` 中的一个目标值 `target` 。该矩阵具有以下特性：
+>
+> - 每行的元素从左到右升序排列。
+> - 每列的元素从上到下升序排列。
+
+```c++
+输入：matrix = [
+    [1,4,7,11,15],
+    [2,5,8,12,19],
+    [3,6,9,16,22],
+    [10,13,14,17,24],
+    [18,21,23,26,30]], 
+target = 5
+输出：true
+```
+
+```c++
+bool searchMatrix(vector<vector<int>>& matrix, int target) {
+    int m = matrix.size(), n = matrix[0].size();
+    int i = 0, j = n - 1;  //从右上角开始搜索
+    while(i < m && j >=0){
+        if(matrix[i][j] == target) 
+            return true;
+        else if(matrix[i][j] < target)
+            i++;
+        else if(matrix[i][j] > target)
+            j--;
+    }
+    return false;
+}
+```
+
+
+
+### 十、图论
 
 图的构造：
 
-邻接矩阵
+```c++
+int main(){
+	int n, m, s, t;
+	cin >> m >> n;
+	vector<vector<int>> graph(n+1, vector<int>(n+1, 0));  //邻接矩阵
+	for(int i = 0; i < m; i++){
+		cin >> s >> t;
+		graph[s][t] = 1;
+	}
+	
+	vector<list<int>> graph(n+1);  //邻接表, 使用list 双向链表
+	for(int i = 0; i < m; i++){
+		cin >> s >> t;
+		graph[s].push_back(t);
+	}
+	return 0;
+} 
+```
+
+1. 图的深度优先搜索
+
+```c++
 
 ```
 
-```
 
-邻接表
 
-### 十、数论
+1. 图的广度优先搜索
+
+### 十一、数论
 
 1. 质数的判断
 
@@ -2059,3 +2422,4 @@ int pow(int n, int k, int MOD){
 }
 ```
 
+<u></u>
