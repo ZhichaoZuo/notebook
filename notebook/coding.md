@@ -288,6 +288,172 @@ int numTrees(int n) {
 }
 ```
 
+9. [零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+> 给你一个整数数组 `coins` ，表示不同面额的硬币；以及一个整数 `amount` ，表示总金额。
+>
+> 计算并返回可以凑成总金额所需的 **最少的硬币个数** 。如果没有任何一种硬币组合能组成总金额，返回 `-1` 。
+>
+> 你可以认为每种硬币的数量是无限的。
+
+```c++
+输入：coins = [1, 2, 5], amount = 11
+输出：3 
+```
+
+```c++
+// dp[i] 表示凑成金额 i 所需要的最少硬币数量。
+int coinChange(vector<int>& coins, int amount) {
+    int MAX  = amount + 1; //初值使用amount + 1是因为最多也就是amount个1相加，再多就不可能了 使用INT_MAX也可以做到，
+    //但是一旦遇到 dp[i - coin] + 1 就会导致int范围溢出，需要额外判断，
+    vector<int> dp(amount + 1, MAX);
+    dp[0] = 0;
+    for(int i = 1; i <= amount; i++){
+        for(auto& coin : coins){
+            if(coin <= i){
+                dp[i] = min(dp[i], dp[i-coin] + 1);
+            }
+        }
+    }
+    //如果 dp[amount] 的值依然是初始设定的很大值，则说明无法凑出该金额，返回 -1
+    return dp[amount] > amount ? -1 : dp[amount];
+}
+```
+
+10. [ 零钱兑换 II](https://leetcode.cn/problems/coin-change-ii/)
+
+> 给你一个整数数组 `coins` 表示不同面额的硬币，另给一个整数 `amount` 表示总金额。
+>
+> 请你计算并返回可以凑成总金额的硬币组合数。如果任何硬币组合都无法凑出总金额，返回 `0` 。
+>
+> 假设每一种面额的硬币有无限个。 
+>
+> 题目数据保证结果符合 32 位带符号整数。
+
+```c++
+输入：amount = 5, coins = [1, 2, 5]
+输出：4
+解释：有四种方式可以凑成总金额：
+5=5
+5=2+2+1
+5=2+1+1+1
+5=1+1+1+1+1
+```
+
+```c++
+int change(int amount, vector<int>& coins) {
+    // dp[i] 表示凑成金额 i 的组合数
+    vector<int> dp(amount + 1, 0);
+    dp[0] = 1; // 凑成金额 0 的组合数为 1（不选任何硬币）
+    // 遍历每一个硬币
+    for (int coin : coins) {
+        // 更新所有金额的组合数
+        for (int i = coin; i <= amount; i++) {
+            dp[i] += dp[i - coin]; // 通过 dp[i - coin] 来更新 dp[i]
+        }
+    }
+    return dp[amount]; // 返回凑成 amount 的组合数
+}
+```
+
+11. [完全平方数](https://leetcode.cn/problems/perfect-squares/)
+
+> 给你一个整数 `n` ，返回 *和为 `n` 的完全平方数的最少数量* 。
+>
+> **完全平方数** 是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，`1`、`4`、`9` 和 `16` 都是完全平方数，而 `3` 和 `11` 不是。
+
+```c++
+输入：n = 13
+输出：2
+解释：13 = 4 + 9
+```
+
+```c++
+int numSquares(int n) {
+    // dp数组，dp[i]表示组成数字i所需的最少完全平方数的个数
+    vector<int> dp(n+1, n+1);    // 初始化为n+1, 因为最多用n个1来表示
+    dp[0] = 0;    // 初始化dp[0]为0，因为0不需要任何数
+    // 遍历1到n，逐步求出dp[i
+    for(int i = 0; i <= n; i++){
+        for(int j = 1; j * j <= i; j++){
+            dp[i] = min(dp[i], dp[i - j*j] + 1);
+        }
+    }
+    return dp[n];
+}
+```
+
+12. [打家劫舍](https://leetcode.cn/problems/house-robber/)
+
+> 你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警**。
+>
+> 给定一个代表每个房屋存放金额的非负整数数组，计算你 **不触动警报装置的情况下** ，一夜之内能够偷窃到的最高金额。
+
+```c++
+输入：[2,7,9,3,1]
+输出：12
+```
+
+```c++
+/*
+dp[i] 表示到第 i 间房屋为止，能够偷取到的最大现金数量。
+- 不偷取第 i 间房屋，则 dp[i] = dp[i-1]。
+- 偷取第 i 间房屋，则我们不能偷取第 i-1 间房屋，这样 dp[i] = nums[i] + dp[i-2]。
+dp[i] = max(dp[i−1], nums[i] + dp[i−2])
+*/
+int rob(vector<int>& nums) {
+    if(nums.size() == 1) return nums[0];
+    if(nums.size() == 2) return max(nums[0],nums[1]);
+    vector<int> dp(nums.size(), 0);
+    dp[0] = nums[0];
+    dp[1] = max(nums[0],nums[1]);    //切记！dp[i] 表示到第 i 间房屋为止，能够偷取到的最大现金数量。
+    for(int i = 2; i < nums.size(); i++){
+        dp[i] = max(dp[i-1], dp[i-2] + nums[i]);   //比较不偷取当前房屋的情况和偷取当前房屋的情况。
+    }
+    return dp[nums.size()-1];
+}
+```
+
+13. [打家劫舍 II](https://leetcode.cn/problems/house-robber-ii/)
+
+> 你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 **围成一圈** ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警** 。
+>
+> 给定一个代表每个房屋存放金额的非负整数数组，计算你 **在不触动警报装置的情况下** ，今晚能够偷窃到的最高金额。
+
+```c++
+输入：nums = [2,3,2]
+输出：3
+解释：你不能先偷窃 1 号房屋（金额 = 2），然后偷窃 3 号房屋（金额 = 2）, 因为他们是相邻的
+```
+
+```c++
+/*
+- 不偷第一间房屋，考虑第2间到最后一间房屋。
+- 不偷最后一间房屋，考虑第一间到倒数第二间房屋。
+*/
+int robfrom(vector<int>& nums, int start, int end){
+    int n = end - start + 1;
+    if(n == 1) return nums[start];
+    vector<int> dp(n, 0);
+    dp[0] = nums[start];
+    dp[1] = max(nums[start], nums[start + 1]);
+    for(int i = 2; i < n; i++){
+        dp[i] = max(dp[i-1], dp[i-2] + nums[start + i]);
+    }
+    return dp[n-1];
+}
+int rob(vector<int>& nums) {
+    int n = nums.size();
+    if(n == 1) return nums[0];
+    if(n == 2) return max(nums[0], nums[1]);
+    int case1 = robfrom(nums, 0, n-2);   // 情况1: 不偷最后一间，偷第1到倒数第二间
+    int case2 = robfrom(nums, 1, n-1);   // 情况2: 不偷第一间，偷第2到最后一间
+    return max(case1, case2);
+}
+```
+
+
+
 ### 二、贪心
 
 1. [分发饼干](https://leetcode.cn/problems/assign-cookies/)
@@ -1008,6 +1174,231 @@ int main(){
 }
 ```
 
+7. [和为k的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/)
+
+> 给你一个整数数组 `nums` 和一个整数 `k` ，请你统计并返回 *该数组中和为 `k` 的子数组的个数* 。
+>
+> 子数组是数组中元素的连续非空序列。
+
+```c++
+输入：nums = [1,2,3], k = 3
+输出：2
+```
+
+```c++
+int subarraySum(vector<int>& nums, int k) {
+    int count = 0, pre = 0;         //pre前缀和，
+    unordered_map<int,int> m;      //前缀和出现的次数,数组可能存在0、负数
+    m[0] = 1;                     // 初始化前缀和为 0 , 方便sum[i] = k
+    for(int num : nums){
+        pre += num;
+        if(m.find(pre - k) != m.end()){     //sum[i] - sum[j-1] = k(存在从j到i子数组和为k)
+            count += m[pre - k];            //加针对当前num，加上前缀和为pre-k的次数
+        }
+        m[pre]++;                         //最后更新map
+    }
+    return count;
+}
+```
+
+8. [最小覆盖子串](https://leetcode.cn/problems/minimum-window-substring/)
+
+> 给你一个字符串 `s` 、一个字符串 `t` 。返回 `s` 中涵盖 `t` 所有字符的最小子串。如果 `s` 中不存在涵盖 `t` 所有字符的子串，则返回空字符串 `""` 。
+>
+> **注意：**
+>
+> - 对于 `t` 中重复字符，我们寻找的子字符串中该字符数量必须不少于 `t` 中该字符数量。
+> - 如果 `s` 中存在这样的子串，我们保证它是唯一的答案。
+
+```c++
+输入：s = "ADOBECODEBANC", t = "ABC"
+输出："BANC"
+解释：最小覆盖子串 "BANC" 包含来自字符串 t 的 'A'、'B' 和 'C'。
+```
+
+```c++
+string minWindow(string s, string t) {
+    if(s.size() < t.size()) return "";
+    
+    string res = s + " ";         //增添 " ", 方便最后比较
+    unordered_map<char, int> smap, tmap;     //分别用于存储字符出现的次数
+    int correct = 0, left = 0;
+    for(char c : t){
+        tmap[c]++;
+    }
+    for(int i = 0; i < s.size();  i++){
+        smap[s[i]]++;
+        if(tmap[s[i]] >= smap[s[i]]) correct++;
+        //当起始点重复，起始点开始右移，直到新的覆盖子串最左端
+        while(left < i && smap[s[left]] > tmap[s[left]]){
+            smap[s[left]]--;
+            left++;
+        }
+        if(correct == t.size()){
+            if(i - left + 1 <= res.size())     //当出现更短的覆盖子串
+            	res = s.substr(left, i - left + 1);
+        }
+    }
+    return res == s  + " " ? "" : res;
+}
+```
+
+9. 移动零](https://leetcode.cn/problems/move-zeroes/)
+
+> 给定一个数组 `nums`，编写一个函数将所有 `0` 移动到数组的末尾，同时保持非零元素的相对顺序。
+>
+> **请注意** ，必须在不复制数组的情况下原地对数组进行操作。
+
+```c++
+输入: nums = [0,1,0,3,12]
+输出: [1,3,12,0,0]
+```
+
+```c++
+//直接覆盖，不足的补0
+void moveZeroes(vector<int>& nums) {
+    int index = 0;
+    for(int i = 0; i < nums.size(); i++){
+        if(nums[i] != 0){
+            nums[index] = nums[i];
+            index++;
+        }
+    }
+    for(int i = index; i < nums.size(); i++)
+        nums[i] = 0;
+}
+```
+
+```c++
+//双指针，left要么和right指向同一个值； 要么一直指向0
+void moveZeroes(vector<int>& nums) {
+    int left = 0, right = 0;
+    while(right < nums.size()){
+        if(nums[right]){
+            swap(nums[right], nums[left]);
+            left++;
+        }
+        right++;
+    }
+}
+```
+
+10. [盛最多水的容器](https://leetcode.cn/problems/container-with-most-water/)
+
+> 给定一个长度为 `n` 的整数数组 `height` 。有 `n` 条垂线，第 `i` 条线的两个端点是 `(i, 0)` 和 `(i, height[i])` 。
+>
+> 找出其中的两条线，使得它们与 `x` 轴共同构成的容器可以容纳最多的水。返回容器可以储存的最大水量。
+
+```c++
+输入：[1,8,6,2,5,4,8,3,7]
+输出：49 
+解释：图中垂直线代表输入数组 [1,8,6,2,5,4,8,3,7]。在此情况下，容器能够容纳水（表示为蓝色部分）的最大值为 49。
+```
+
+```c++
+int maxArea(vector<int>& height) {
+    int left = 0, right = height.size() - 1;
+    int temp = 0, res = 0;
+    while(left < right){
+        temp = min(height[right], height[left]) * (right - left);
+        res = max(res, temp);
+        if(height[left] < height[right]) left++;
+        else if(height[right] <= height[left]) right--;
+    }
+    return res;
+}
+```
+
+11. [接雨水](https://leetcode.cn/problems/trapping-rain-water/)
+
+> 给定 `n` 个非负整数表示每个宽度为 `1` 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+
+```c++
+输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]
+输出：6
+```
+
+```c++
+int trap(vector<int>& height) {
+    int res = 0;
+    int left = 0, right = height.size() - 1;
+    int leftmax = 0, rightmax = 0;
+    while(left < right){
+        leftmax = max(leftmax, height[left]); //更新
+        rightmax = max(rightmax, height[right]);
+        if(height[left] < height[right]){
+            res = res + (leftmax - height[left]);
+            left++;
+        } 
+        else{
+            res = res + (rightmax - height[right]);
+            right--;
+        }
+    }
+    return res;
+}
+```
+
+12. [轮转数组](https://leetcode.cn/problems/rotate-array/)
+
+> 给定一个整数数组 `nums`，将数组中的元素向右轮转 `k` 个位置，其中 `k` 是非负数。
+
+```c++
+输入: nums = [1,2,3,4,5,6,7], k = 3
+输出: [5,6,7,1,2,3,4]
+```
+
+```c++
+//空间复杂度为 O(1) 的 原地 算法
+
+/*数组翻转
+该方法基于如下的事实：当我们将数组的元素向右移动 k 次后，尾部 k mod n 个元素会移动至数组头部，其余元素向后移动 k mod n 个位置。
+
+该方法为数组的翻转：我们可以先将所有元素翻转，这样尾部的 k mod n 个元素就被移至数组头部，然后我们再翻转 [0,k mod n −1] 区间的元素和 [k mod n, n−1] 区间的元素即能得到最后的答案。
+*/
+void reverse1(vector<int>& nums, int start, int end){
+    while(start < end){
+        swap(nums[start++], nums[end--]);
+    }
+}
+void rotate(vector<int>& nums, int k) {
+    int m = k % nums.size();
+    reverse(nums.begin(), nums.end());
+    reverse1(nums, 0, m-1);
+    reverse1(nums, m, nums.size()-1);
+}
+```
+
+13. [除自身以外数组的乘积](https://leetcode.cn/problems/product-of-array-except-self/)
+
+> 给你一个整数数组 `nums`，返回 数组 `answer` ，其中 `answer[i]` 等于 `nums` 中除 `nums[i]` 之外其余各元素的乘积 。
+>
+> 题目数据 **保证** 数组 `nums`之中任意元素的全部前缀元素和后缀的乘积都在 **32 位** 整数范围内。
+>
+> 请 **不要使用除法，**且在 `O(n)` 时间复杂度内完成此题
+
+```c++
+输入: nums = [1,2,3,4]
+输出: [24,12,8,6]
+```
+
+```c++
+vector<int> productExceptSelf(vector<int>& nums) {
+    int n = nums.size();
+    vector<int> l(n, 0), r(n, 0);  //l 用于存储每个位置左边元素的乘积，r 用于存储每个位置右边元素的乘积
+    vector<int> res(n);
+    l[0] = 1, r[n - 1] = 1;
+    for(int i = 1; i < n; i++)
+        l[i] = l[i-1] * nums[i-1];    // 当前元素的左乘积 = 前一个元素的左乘积 * 前一个元素的值
+    for(int j = n-2; j >= 0; j--)
+        r[j] = r[j+1] * nums[j+1];   // 当前元素的右乘积 = 后一个元素的右乘积 * 后一个元素的值
+    for(int i = 0; i < n; i++){
+        res[i] = l[i] * r[i];     //最终结果：res[i] = l[i] * r[i]，即 res[i] 是除去自身元素后左边和右边的乘积
+    } 
+    return res;
+}
+```
+
 
 
 2. 排序
@@ -1245,6 +1636,182 @@ public:
 
 ```
 
+7. [两数相加](https://leetcode.cn/problems/add-two-numbers/)
+
+> 给你两个 **非空** 的链表，表示两个非负的整数。它们每位数字都是按照 **逆序** 的方式存储的，并且每个节点只能存储 **一位** 数字。
+>
+> 请你将两个数相加，并以相同形式返回一个表示和的链表。
+>
+> 你可以假设除了数字 0 之外，这两个数都不会以 0 开头
+
+```c++
+输入：l1 = [2,4,3], l2 = [5,6,4]
+输出：[7,0,8]
+解释：342 + 465 = 807.
+```
+
+```c++
+ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+    int carry= 0;
+    ListNode *dummy = new ListNode(0),*curr = dummy;
+    while(l1 || l2){
+        int a = l1 ? l1->val : 0;
+        int b = l2 ? l2->val : 0;
+        ListNode *node = new ListNode((a + b + carry) % 10);
+        curr->next = node;
+        curr = curr->next;
+        carry = (a + b + carry) / 10 ;
+        if(l1) l1 = l1->next;
+        if(l2) l2 = l2->next;
+    }
+    if(carry) curr->next = new ListNode(carry);      //注意最后的进位
+    return dummy->next;
+}
+```
+
+8. [排序链表](https://leetcode.cn/problems/sort-list/)
+
+> 给你链表的头结点 `head` ，请将其按 **升序** 排列并返回 **排序后的链表** .
+>
+> 你可以在 `O(n log n)` 时间复杂度和常数级空间复杂度下，对链表进行排序吗？
+
+```c++
+输入：head = [-1,5,3,4,0]
+输出：[-1,0,3,4,5]
+```
+
+```c++
+//合并两个有序链表
+ListNode* merge(ListNode* l1, ListNode* l2){
+    ListNode *dummy = new ListNode(0);
+    ListNode *curr = dummy;
+    while(l1 && l2){
+        if(l1->val < l2->val){
+            curr->next = l1;
+            l1 = l1->next;
+        }
+        else{
+            curr->next = l2;
+            l2 = l2->next;
+        }
+        curr = curr->next;
+    }
+    curr->next = l1 ? l1 : l2;
+    return dummy->next;
+}
+//归并排序
+ListNode* sortList(ListNode* head) {
+    if(head == nullptr || head->next == nullptr)
+        return head;
+    ListNode *slow = head;
+    ListNode *fast = head->next;
+    while(fast && fast->next){
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    ListNode *head2 = slow->next; //分割链表，第二个链表的头结点
+    slow->next = nullptr;  //分割链表！第一个链表尾指针指向nullptr
+    return merge(sortList(head), sortList(head2));
+}
+```
+
+9. [合并K个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/)
+
+> 给你一个链表数组，每个链表都已经按升序排列。
+>
+> 请你将所有链表合并到一个升序链表中，返回合并后的链表。
+
+```c++
+输入：lists = [[1,4,5],[1,3,4],[2,6]]
+输出：[1,1,2,3,4,4,5,6]
+```
+
+```c++
+class Solution {
+public:
+    //合并两个有序链表
+    ListNode* mergeTwoList(ListNode* l1, ListNode* l2){
+        ListNode *dummy = new ListNode(0);
+        ListNode *curr = dummy;
+        while(l1 && l2){
+            if(l1->val < l2->val){
+                curr->next = l1;
+                l1 = l1->next;
+            }
+            else{
+                curr->next = l2;
+                l2 = l2->next;
+            }
+            curr = curr->next;
+        }
+        curr->next = l1 ? l1 : l2;
+        return dummy->next;
+    }
+    // 辅助递归函数，分治法合并链表
+    ListNode* mergeListsHelper(vector<ListNode*>& lists, int left, int right){
+        if(left == right) return lists[left];
+        int mid = left + (right - left) / 2;
+        ListNode* l1 = mergeListsHelper(lists, left, mid);
+        ListNode* l2 = mergeListsHelper(lists, mid+1, right);
+        return mergeTwoList(l1, l2);
+    }
+    // 递归分治法合并K个有序链表
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        if (lists.empty()) return nullptr;
+        return mergeListsHelper(lists, 0, lists.size() - 1);
+    }
+};
+```
+
+
+
+10. K个一组翻转链表
+
+> 给你链表的头节点 `head` ，每 `k` 个节点一组进行翻转，请你返回修改后的链表。
+>
+> `k` 是一个正整数，它的值小于或等于链表的长度。如果节点总数不是 `k` 的整数倍，那么请将最后剩余的节点保持原有顺序。
+>
+> 你不能只是单纯的改变节点内部的值，而是需要实际进行节点交换。
+
+```c++
+输入：head = [1,2,3,4,5], k = 2
+输出：[2,1,4,3,5]
+```
+
+```c++
+ListNode* reverseKGroup(ListNode* head, int k) {
+    ListNode *temp = head;
+
+    // Step 1: 检查链表剩余的节点是否少于 k 个
+    for (int i = 0; i < k; i++) {
+        if (temp == nullptr) {
+            return head; // 如果剩余的节点不足 k 个，直接返回 head（不翻转）
+        }
+        temp = temp->next; // temp 向后移动到第 k+1 个节点
+    }
+
+    // Step 2: 递归调用 reverseKGroup(temp, k) 翻转后续的链表
+    // `pre` 是下一个翻转组的头结点（已经翻转好）
+    ListNode *pre = reverseKGroup(temp, k);
+
+    // Step 3: 翻转当前 k 个节点
+    // 当前 head 是要翻转的这组的第一个节点
+    // `pre` 是翻转后剩余部分的头结点
+    for (int i = 0; i < k; i++) {
+        ListNode *nextnode = head->next;   // 临时保存下一个节点
+        head->next = pre;    // 翻转，将当前节点指向上一个节点（pre）
+        pre = head;          // 移动 pre，使其指向当前节点
+        head = nextnode;         // 移动 head，处理下一个节点
+    }
+
+    // Step 4: 返回翻转后的头节点
+    return pre;
+}
+
+```
+
+
+
 ### 六、哈希表
 
 1. [快乐数](https://leetcode.cn/problems/happy-number/)
@@ -1445,6 +2012,72 @@ int longestConsecutive(vector<int>& nums) {
         longest = max(longest, curr);     //更新
     }
     return longest;
+}
+```
+
+7. [无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
+
+> 给定一个字符串 `s` ，请你找出其中不含有重复字符的最长子串的长度。
+
+```c++
+输入: s = "abcabcbb"
+输出: 3
+```
+
+```c++
+int lengthOfLongestSubstring(string s) {
+    int res = 0;
+    unordered_map<char, int> m;       //每个字符上次出现的位置
+    int start = 0;
+    for(int i = 0; i < s.size(); i++){
+        if(m.count(s[i]) && m[s[i]] >= start){    //必须注意m[s[i]] >= start，start已经更新！只在乎start之后的字符
+            start = m[s[i]] + 1;
+        }
+        m[s[i]] = i;
+        res = max(res, i - start + 1);
+    }
+    return res;
+}
+```
+
+8. [找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string/)
+
+> 给定两个字符串 `s` 和 `p`，找到 `s` 中所有 `p` 的 **异位词** 的子串，返回这些子串的起始索引。不考虑答案输出的顺序。
+>
+> **异位词** 指由相同字母重排列形成的字符串（包括相同的字符串）。
+
+```c++
+输入: s = "cbaebabacd", p = "abc"
+输出: [0,6]
+解释:
+起始索引等于 0 的子串是 "cba", 它是 "abc" 的异位词。
+起始索引等于 6 的子串是 "bac", 它是 "abc" 的异位词。
+```
+
+```c++
+//通过使用滑动窗口和字符频率计数来优化异位词检测。
+vector<int> findAnagrams(string s, string p) {
+    vector<int> res;
+    int n = s.size(), ps = p.size();
+    
+    if(n < ps) return {};
+    vector<int> target(26,0), temp(26, 0);  //存储字符频率
+    // 初始化 p 的字符计数
+    for(char c : p)
+        target[c - 'a']++;
+    // 初始化 s 的前 ps 个字符的计数
+    for(int i = 0;  i < ps; i++)
+        temp[s[i] - 'a']++;
+    if(target == temp) res.push_back(0);
+
+    for(int i = ps; i < n; i++){
+        // 移动窗口，更新计数
+        temp[s[i] - 'a']++;    // 加入新的字符
+        temp[s[i-ps] - 'a']--;  // 移除左边界的字符
+        if(temp == target) res.push_back(i-ps+1); // 如果当前窗口的计数与 p 的计数相同，则记录结果
+    }
+    return res;
+
 }
 ```
 
@@ -1946,6 +2579,95 @@ public:
 };
 ```
 
+11. [括号生成](https://leetcode.cn/problems/generate-parentheses/)
+
+> 数字 `n` 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 **有效的** 括号组合。
+
+```c++
+输入：n = 3
+输出：["((()))","(()())","(())()","()(())","()()()"]
+```
+
+```c++
+//使用回溯法来生成所有有效的括号组合。核心思想是通过递归尝试在不同位置添加左括号 ( 和右括号 )，并且保持生成的括号序列有效。
+void backtrack(vector<string>& res, string& temp, int left, int right, int n){ //left,right记录左右括号的数量
+    if(temp.size() == 2 * n)
+        res.push_back(temp);
+    // 如果左括号数量小于 n，则可以继续添加左括号
+    if(left < n){
+        temp.push_back('(');
+        backtrack(res, temp, left + 1, right, n);
+        temp.pop_back();
+    }
+    // 如果右括号数量小于左括号数量，则可以添加右括号!!!
+    if(right < left){
+        temp.push_back(')');
+        backtrack(res, temp, left, right + 1, n);
+        temp.pop_back();
+    }
+}
+vector<string> generateParenthesis(int n) {
+    vector<string> res;
+    string temp;
+    backtrack(res, temp, 0, 0, n);
+    return res;
+}
+```
+
+12. [单词搜索](https://leetcode.cn/problems/word-search/)
+
+> 给定一个 `m x n` 二维字符网格 `board` 和一个字符串单词 `word` 。如果 `word` 存在于网格中，返回 `true` ；否则，返回 `false` 。
+>
+> 单词必须按照字母顺序，通过相邻单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。
+
+```c++
+输入：board = 
+[
+    ["A","B","C","E"],
+    ["S","F","C","S"],
+    ["A","D","E","E"]
+], word = "ABCCED"
+输出：true
+```
+
+```c++
+
+class Solution {
+public:
+    vector<vector<int>> dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    bool backtrack(vector<vector<char>>& board, string& word, vector<vector<bool>>& visited, int i, int j, int index){
+        if(index == word.size()) // 如果当前字符的索引已经等于 word 的长度，说明找到了整个单词
+            return true;
+        if(i < 0 || i >= board.size() || j < 0 || j >= board[0].size() || board[i][j] != word[index] || visited[i][j])
+            return false;
+        visited[i][j] = true;
+        for(const auto& dir : dirs){ //const：不能修改 dir，提高安全性。&：避免拷贝，提高性能，直接访问元素
+            int x = i + dir[0];
+            int y = j + dir[1];
+            if(backtrack(board, word, visited, x, y, index+1))
+                return true;  
+        }
+        visited[i][j] = false;
+        return false;
+    }
+    bool exist(vector<vector<char>>& board, string word) {
+        int m = board.size(), n = board[0].size();
+        vector<vector<bool>> visited(m, vector<bool>(n, false));
+         // 遍历每个格子，作为 DFS 的起点
+        for(int i = 0; i < m; i++){
+            for(int j = 0; j < n; j++){
+                if(backtrack(board, word, visited, i, j, 0)){
+                    return true;
+                } 
+            }
+        }
+        return false;
+    }
+};
+```
+
+
+
 ### 九、矩阵
 
 1. 岛屿数量
@@ -2218,6 +2940,66 @@ bool searchMatrix(vector<vector<int>>& matrix, int target) {
 }
 ```
 
+6. [腐烂的橘子](https://leetcode.cn/problems/rotting-oranges/)
+
+> 在给定的 `m x n` 网格 `grid` 中，每个单元格可以有以下三个值之一：
+>
+> - 值 `0` 代表空单元格；
+> - 值 `1` 代表新鲜橘子；
+> - 值 `2` 代表腐烂的橘子。
+>
+> 每分钟，腐烂的橘子 **周围 4 个方向上相邻** 的新鲜橘子都会腐烂。
+>
+> 返回 *直到单元格中没有新鲜橘子为止所必须经过的最小分钟数。如果不可能，返回 `-1`* 。
+
+```c++
+输入：grid =  
+[
+    [2,1,1],
+    [1,1,0],
+    [0,1,1]
+]
+输出：4
+```
+
+```c++
+int orangesRotting(vector<vector<int>>& grid){
+    int m = grid.size(), n = grid[0].size();
+    queue<pair<int, int>> q;
+    int fresh = 0;   //记录新鲜橘子的数量
+    for(int i = 0; i < m; i++){
+        for(int j = 0; j < n; j++){
+            if(grid[i][j] == 2){
+                q.push({i, j});   //将所有腐烂橘子的坐标加入队列
+            }
+            else if(grid[i][j] == 1){
+                fresh++;    //统计新鲜橘子的数量
+            }
+        }
+    }
+    if(fresh == 0) return 0; //如果新鲜橘子的数量为0，直接返回0!!!
+    int res = 0;  //记录分钟数
+    vector<vector<int>> dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}}; //四个方向
+    while(!q.empty()){   //队列不为空，即还有腐烂橘子
+        int size = q.size();  //记录当前分钟的腐烂橘子的数量
+        for(int i = 0; i < size; i++){   
+            auto cur = q.front();   //当前腐烂橘子的坐标
+            q.pop();
+            for(auto dir : dirs){
+                int x = cur.first + dir[0], y = cur.second + dir[1];
+                if(x < 0 || x >= m || y < 0 || y >= n || grid[x][y] != 1) continue;
+                grid[x][y] = 2;
+                q.push({x, y});     //将新腐烂的橘子坐标加入队列
+                fresh--;        //新鲜橘子的数量减1
+            }
+        }
+        res++;
+    }
+    return fresh == 0 ? res - 1 : -1; //如果新鲜橘子的数量为0，返回res-1!!!否则返回-1
+}
+
+```
+
 
 
 ### 十、图论
@@ -2252,6 +3034,57 @@ int main(){
 
 
 1. 图的广度优先搜索
+
+1. [课程表](https://leetcode.cn/problems/course-schedule/)
+
+> 你这个学期必须选修 `numCourses` 门课程，记为 `0` 到 `numCourses - 1` 。
+>
+> 在选修某些课程之前需要一些先修课程。 先修课程按数组 `prerequisites` 给出，其中 `prerequisites[i] = [ai, bi]` ，表示如果要学习课程 `ai` 则 **必须** 先学习课程 `bi` 。
+>
+> - 例如，先修课程对 `[0, 1]` 表示：想要学习课程 `0` ，你需要先完成课程 `1` 。
+>
+> 请你判断是否可能完成所有课程的学习？如果可以，返回 `true` ；否则，返回 `false`
+
+```c++
+输入：numCourses = 2, prerequisites = [[1,0],[0,1]]
+输出：false
+```
+
+```c++
+//判断有无环，拓扑排序
+bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+    // 构建图的邻接表和入度表
+    vector<vector<int>> graph(numCourses);
+    vector<int> indegree(numCourses, 0);
+    // 构建邻接表并计算每个节点的入度
+    for(const auto& pair : prerequisites){
+        graph[pair[1]].push_back(pair[0]);
+        indegree[pair[0]]++;
+    }
+    // 找出所有入度为0的节点，加入队列
+    queue<int> q;
+    for(int i = 0; i < numCourses; i++){
+        if(indegree[i] == 0)
+            q.push(i);
+    }
+    int visited = 0;
+    while(!q.empty()){
+        int temp = q.front(); 
+        q.pop();
+        visited++;
+        // 对于该课程的每个后续课程，减少其入度
+        for(int next: graph[temp]){
+            indegree[next]--;
+            if(indegree[next] == 0)  //入度为0的节点，加入队列
+                q.push(next);
+        }
+    }
+    // 如果所有课程都访问过，返回true；否则，返回false
+    return visited == numCourses;
+}
+```
+
+
 
 ### 十一、数论
 
