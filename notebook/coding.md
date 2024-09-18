@@ -452,6 +452,220 @@ int rob(vector<int>& nums) {
 }
 ```
 
+14. 0-1背包问题
+
+> 有 $n$ 个物品和一个容量为 $W$ 的背包，每个物品有重量 $W_i$ 和价值 $V_i$ 两种属性，要求选若干物品放入背包使背包中物品的总价值最大且背包中物品的总重量不超过背包的容量。
+
+```c++
+int main() {
+    int n, bagweight;// bagweight代表行李箱空间
+
+    cin >> n >> bagweight;
+
+    vector<int> weight(n, 0); // 存储每件物品所占空间
+    vector<int> value(n, 0);  // 存储每件物品价值
+
+    for(int i = 0; i < n; ++i) {
+        cin >> weight[i];
+    }
+    for(int j = 0; j < n; ++j) {
+        cin >> value[j];
+    }
+    // dp数组, dp[i][j]代表行李箱空间为j的情况下,从下标为[0, i]的物品里面任意取,能达到的最大价值
+    vector<vector<int>> dp(weight.size(), vector<int>(bagweight + 1, 0));
+
+    // 初始化, 因为需要用到dp[i - 1]的值
+    // j < weight[0]已在上方被初始化为0
+    // j >= weight[0]的值就初始化为value[0]
+    for (int j = weight[0]; j <= bagweight; j++) {
+        dp[0][j] = value[0];
+    }
+    
+    for(int i = 1; i < weight.size(); i++) { // 遍历科研物品
+        for(int j = 0; j <= bagweight; j++) { // 遍历行李箱容量
+            if (j < weight[i]) dp[i][j] = dp[i - 1][j]; // 如果装不下这个物品,那么就继承dp[i - 1][j]的值
+            else {
+                dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - weight[i]] + value[i]);
+            }
+        }
+    }
+    
+    cout << dp[n - 1][bagweight] << endl;
+    return 0;
+}
+```
+
+```c++
+//一维dp
+int main() {
+    int n, bagweight;// bagweight代表行李箱空间
+
+    cin >> n >> bagweight;
+
+    vector<int> weight(n, 0); // 存储每件物品所占空间
+    vector<int> value(n, 0);  // 存储每件物品价值
+
+    for(int i = 0; i < n; ++i) {
+        cin >> weight[i];
+    }
+    for(int j = 0; j < n; ++j) {
+        cin >> value[j];
+    }
+    // dp数组, dp[j]代表行李箱空间为j的情况下,能达到的最大价值
+    vector<int> dp(bagweight + 1, 0);
+
+    for(int i = 1; i < weight.size(); i++) { // 遍历科研物品
+        for(int j = bagweight; j >= weight[i]; j--) { // 遍历行李箱容量
+            dp[i][j] = max(dp[j], dp[j - weight[i]] + value[i]);
+        }
+    }
+    
+    cout << dp[bagweight] << endl;
+    return 0;
+}
+```
+
+15. [分割等和子集](https://leetcode.cn/problems/partition-equal-subset-sum/)
+
+> 给你一个 **只包含正整数** 的 **非空** 数组 `nums` 。请你判断是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
+
+```c++
+输入：nums = [1,5,11,5]
+输出：true
+```
+
+```c++
+bool canPartition(vector<int>& nums) {
+    int n = nums.size();
+    if (n < 2)
+        return false;
+    int sum = 0, maxnum = 0;
+    for(int num : nums){
+        sum += num;
+        maxnum = max(maxnum, num);
+    }
+    if(sum % 2 == 1)    // 总和为奇数时无法平分
+        return false;
+    int target = sum / 2;
+    if(maxnum > target)  //最大值大于sum/2时无法平分
+        return false;
+    vector<vector<bool>> dp(n, vector<bool>(target + 1, false)); //i表示使用前i个数，j表示是否可以凑出和为j的子集
+    for(int i = 0; i < n; i++)
+        dp[i][0] = true;
+    dp[0][nums[0]] = true;    
+    for(int i = 1; i < n; i++){       //对n个数进行遍历
+        for(int j = 1; j <= target; j++){
+            if(j >= nums[i])
+                dp[i][j] = dp[i-1][j] || dp[i-1][j-nums[i]];    //如果选择 nums[i]，是否能通过前 i-1 个元素凑出 j - nums[i]
+            else
+                dp[i][j] = dp[i-1][j];      //表示不选 nums[i] 时，能否通过前 i-1 个元素凑出和 j。
+        }
+    }
+    return dp[n-1][target];
+}
+```
+
+```c++
+bool canPartition(vector<int>& nums) {
+    int n = nums.size();
+    if (n < 2)
+        return false;
+    int sum = 0, maxnum = 0;
+    for(int num : nums){
+        sum += num;
+        maxnum = max(maxnum, num);
+    }
+    if(sum % 2 == 1)    // 总和为奇数时无法平分
+        return false;
+    int target = sum / 2;
+    if(maxnum > target)  //最大值大于sum/2时无法平分
+        return false;
+    vector<bool> dp(target + 1, false); //j表示是否可以凑出和为j的子集
+    dp[0] = true;
+    for(int& num : nums){       //对n个数进行遍历
+        for(int j = target; j >=num ; j--){       //注意j>=num
+            dp[j] = dp[j] || dp[j-num];    //如果选择 nums[i]，是否能通过前 i-1 个元素凑出 j - nums[i]
+        }
+    }
+    return dp[target];
+}
+```
+
+16. [目标和](https://leetcode.cn/problems/target-sum/)
+
+> 给你一个非负整数数组 `nums` 和一个整数 `target` 。
+>
+> 向数组中的每个整数前添加 `'+'` 或 `'-'` ，然后串联起所有整数，可以构造一个 **表达式** ：
+>
+> - 例如，`nums = [2, 1]` ，可以在 `2` 之前添加 `'+'` ，在 `1` 之前添加 `'-'` ，然后串联起来得到表达式 `"+2-1"` 。
+>
+> 返回可以通过上述方法构造的、运算结果等于 `target` 的不同 **表达式** 的数目。
+
+```c++
+输入：nums = [1,1,1,1,1], target = 3
+输出：5
+解释：一共有 5 种方法让最终目标和为 3 。
+-1 + 1 + 1 + 1 + 1 = 3
++1 - 1 + 1 + 1 + 1 = 3
++1 + 1 - 1 + 1 + 1 = 3
++1 + 1 + 1 - 1 + 1 = 3
++1 + 1 + 1 + 1 - 1 = 3
+```
+
+```c++
+/*
+分为两个背包，一个存放符号为+的值，一个存放符号为-的值，pos+neg=sum,pos-neg=target;则neg=(sum-target)/2;
+dp[i][j] 表示使用前 i 个元素，凑成和为 j 的方案数
+
+*/
+int findTargetSumWays(vector<int>& nums, int target) {
+    int n = nums.size();
+    int sum = 0;
+    for(int& num : nums){
+        sum += num;
+    }
+    // 如果目标和大于总和，或 (sum - target) 不是偶数，则无解
+    if(sum < target) return 0;
+    if((sum - target) % 2 != 0) return 0;
+    int neg = (sum - target) / 2;
+    vector<vector<int>> dp(n+1, vector<int>(neg + 1, 0));
+    // 初始化：dp[0][0] = 1 表示不使用任何数时，和为 0 的情况; 不是选择第一个数；当没有任何元素可以选取时，元素和只能是 0，对应的方案数是 1
+    dp[0][0] = 1;
+    for(int i = 1; i <= n; i++){
+        for(int j = 0; j <= neg; j++){
+            if(j >= nums[i-1])
+                dp[i][j] = dp[i-1][j] + dp[i-1][j-nums[i-1]];
+            else
+                dp[i][j] = dp[i-1][j];
+        }
+    }
+    return dp[n][neg];
+}
+```
+
+```c++
+//一维dp
+int findTargetSumWays(vector<int>& nums, int target) {
+    int n = nums.size();
+    int sum = 0;
+    for(int& num : nums){
+        sum = sum + num;
+    }
+    if(sum < target) return 0;
+    if((sum - target) % 2 == 1) return 0;
+    int neg = (sum - target) / 2;
+    vector<int> dp(neg + 1, 0);
+    dp[0] = 1;
+    for(int& num : nums){
+        for(int j = neg; j >=num; j--){
+            if(j >= num)
+                dp[j] = dp[j] + dp[j-num];
+        }
+    }
+    return dp[neg];
+}
+```
+
 
 
 ### 二、贪心
