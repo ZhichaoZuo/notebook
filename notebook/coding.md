@@ -1,8 +1,4 @@
-​    
-
-
-
-### 一、动态规划
+ ### 一、动态规划
 
 1.数字三角形
 
@@ -666,6 +662,175 @@ int findTargetSumWays(vector<int>& nums, int target) {
 }
 ```
 
+17. [最小路径和](https://leetcode.cn/problems/minimum-path-sum/)
+
+> 给定一个包含非负整数的 `*m* x *n*` 网格 `grid` ，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。
+>
+> **说明：**每次只能向下或者向右移动一步。
+
+```c++
+输入：grid = 
+[
+    [1,3,1],
+    [1,5,1],
+    [4,2,1]
+]
+输出：7
+解释：因为路径 1→3→1→1→1 的总和最小。
+```
+
+```c++
+int minPathSum(vector<vector<int>>& grid) {
+    int m = grid.size(), n = grid[0].size();
+    vector<vector<int>> dp(m, vector<int>(n, INT_MAX));
+    dp[0][0] = grid[0][0];
+    for(int i = 1; i < m; i++)
+        dp[i][0] = dp[i-1][0] + grid[i][0];
+    for(int j = 1; j < n; j++){
+        dp[0][j] = dp[0][j-1] + grid[0][j];
+    }
+    for(int i = 1; i < m; i++){
+        for(int j = 1; j < n; j++){
+            dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j];
+        }
+    } 
+    return dp[m-1][n-1];
+}
+```
+
+18. [乘积最大子数组](https://leetcode.cn/problems/maximum-product-subarray/)
+
+> 给你一个整数数组 `nums` ，请你找出数组中乘积最大的非空连续子数组（该子数组中至少包含一个数字），并返回该子数组所对应的乘积。
+>
+> 测试用例的答案是一个 **32-位** 整数。
+
+```c++
+输入: nums = [2,3,-2,4]
+输出: 6
+```
+
+```c++
+/*
+因为存在负数的原因，当前位置的最优解未必是由前一个位置的最优解转移得到的. 用白话来解释就是: 两个负数相乘有可能会得到更大的结果, 当前的最大值并不一定是通过上个状态的最大值决定的, 也可能是上个状态的最小值决定的. 
+需要同时维护上个状态的最大值和最小值，需要维护两个dp数组, 而且这两个数组是完全独立的。
+        fmax[i] = max(fmax[i-1] * nums[i], fmin[i-1] * nums[i], nums[i]); 三者取最大
+        fmin[i] = min(fmax[i-1] * nums[i], fmin[i-1] * nums[i], nums[i]); 三者取最小
+*/
+int maxProduct(vector<int>& nums) {
+    int ans = nums[0];
+    int n = nums.size();
+    vector<int> fmax(n, INT_MIN);
+    vector<int> fmin(n, INT_MAX);
+    fmax[0] = nums[0], fmin[0] = nums[0];
+    for(int i = 1; i < n; i++){
+        fmax[i] = max(max(fmax[i-1] * nums[i], fmin[i-1] * nums[i]), nums[i]);
+        fmin[i] = min(min(fmax[i-1] * nums[i], fmin[i-1] * nums[i]), nums[i]);
+        ans = max(ans, fmax[i]);
+    }
+    return ans;
+}
+```
+
+19. [单词拆分](https://leetcode.cn/problems/word-break/)
+
+> 给你一个字符串 `s` 和一个字符串列表 `wordDict` 作为字典。如果可以利用字典中出现的一个或多个单词拼接出 `s` 则返回 `true`。
+>
+> **注意：**不要求字典中出现的单词全部都使用，并且字典中的单词可以重复使用。
+
+```c++
+输入: s = "leetcode", wordDict = ["leet", "code"]
+输出: true
+输入: s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+输出: false
+```
+
+```c++
+// dp[j] = true 且 j~i组成的字符串属于wordDict，则dp[i] = true
+bool wordBreak(string s, vector<string>& wordDict) {
+    // 将字典转换为unordered_set，便于查找是否存在某个单词
+    unordered_set<string> dict;      
+    for(string& word : wordDict)
+        dict.insert(word);
+    int n = s.size();
+    // DP数组，dp[i]表示s的前i个字符是否可以由字典中的单词拼接而成
+    vector<bool> dp(n+1, false);
+    dp[0] = true;  // 空字符串可以被认为是由字典单词拼接而成
+    for(int i = 1; i <= n; i++){
+        // 对于每个i，查看它之前的所有子串是否可以被字典中的单词组成
+        for(int j = 0; j < i; j++){
+            // 如果dp[j]为true，且从j到i的子串在字典中存在
+            if(dp[j] && dict.find(s.substr(j, i - j)) != dict.end()){
+                dp[i] = true;
+                break;  // 一旦找到一个匹配的子串，就可以结束当前i的循环
+            }    
+        }
+    }
+    // 最终返回dp[s.size()]，表示整个字符串是否可以由字典中的单词组成
+    return dp[n];
+}
+```
+
+20. [编辑距离](https://leetcode.cn/problems/edit-distance/)
+
+> 给你两个单词 `word1` 和 `word2`， *请返回将 `word1` 转换成 `word2` 所使用的最少操作数* 。
+>
+> 你可以对一个单词进行如下三种操作：
+>
+> - 插入一个字符
+> - 删除一个字符
+> - 替换一个字符
+
+```c++
+输入：word1 = "horse", word2 = "ros"
+输出：3
+```
+
+```markdown
+动态规划思路
+我们使用一个二维的 DP 数组 dp，其中 dp[i][j] 表示将 word1 的前 i 个字符转换为 word2 的前 j 个字符所需的最小操作数。
+
+初始状态：
+dp[0][0] = 0，因为将空字符串转换为空字符串需要 0 次操作。
+对于 dp[i][0]，表示将 word1 的前 i 个字符转换为空字符串，所需的操作数是删除 i 次字符，因此 dp[i][0] = i。
+对于 dp[0][j]，表示将空字符串转换为 word2 的前 j 个字符，所需的操作数是插入 j 次字符，因此 dp[0][j] = j。
+转移方程：
+对于每个 dp[i][j]，我们有三种情况可以选择：
+- （如果 word1[i-1] != word2[j-1]）
+删除操作：如果删除 word1 的一个字符，那么 dp[i][j] = dp[i-1][j] + 1。
+插入操作：如果在 word1 中插入一个字符**(相当于word2删除一个字符)**，那么 dp[i][j] = dp[i][j-1] + 1。
+替换操作：如果替换 word1 的一个字符为 word2 的字符，那么 dp[i][j] = dp[i-1][j-1] + 1。
+- 如果两个字符相同，则不需要替换，即 dp[i][j] = dp[i-1][j-1]。
+最终的答案就是 dp[m][n]，其中 m 是 word1 的长度，n 是 word2 的长度
+```
+
+```c++
+int minDistance(string word1, string word2) {
+    int n1 = word1.size(), n2 = word2.size();
+    vector<vector<int>> dp(n1+1, vector<int>(n2+1, 0));
+    // word1 的前 i 个字符变成空字符串，删除 i 个字符
+    for(int i = 0; i <= n1; i++)
+        dp[i][0] = i;
+    // 空字符串变成 word2 的前 j 个字符，插入 j 个字符
+    for(int j = 0; j <= n2; j++)
+        dp[0][j] = j;
+    for(int i = 1; i <= n1; i++){
+        for(int j = 1; j <= n2; j++){
+            if(word1[i-1] == word2[j-1]){ // 字符相同，不需要操作
+                dp[i][j] = dp[i-1][j-1];
+            }
+            else{
+                dp[i][j] = min({
+                    dp[i-1][j] + 1,    //删除word1[i-1]
+                    dp[i][j-1] + 1,    //插入word2[j-1]
+                    dp[i-1][j-1] + 1,  //替换word1[i-1]为word2[j-1]
+                });
+            }
+        }
+    }
+    return dp[n1][n2];
+}
+```
+
 
 
 ### 二、贪心
@@ -903,7 +1068,50 @@ vector<vector<int>> merge(vector<vector<int>>& intervals) {
 }
 ```
 
-9. [划分字母区间](https://leetcode.cn/problems/partition-labels/)
+9. [插入区间](https://leetcode.cn/problems/insert-interval/)
+
+> 给你一个 **无重叠的** *，*按照区间起始端点排序的区间列表 `intervals`，其中 `intervals[i] = [starti, endi]` 表示第 `i` 个区间的开始和结束，并且 `intervals` 按照 `starti` 升序排列。同样给定一个区间 `newInterval = [start, end]` 表示另一个区间的开始和结束。
+> 在 `intervals` 中插入区间 `newInterval`，使得 `intervals` 依然按照 `starti` 升序排列，且区间之间不重叠（如果有必要的话，可以合并区间）。返回插入之后的 `intervals`。
+> **注意** 你不需要原地修改 `intervals`。你可以创建一个新数组然后返回它。
+```c++
+输入：intervals = [[1,3],[6,9]], newInterval = [2,5]
+输出：[[1,5],[6,9]]
+    
+输入：intervals = [[1,2],[3,5],[6,7],[8,10],[12,16]], newInterval = [4,8]
+输出：[[1,2],[3,10],[12,16]]
+```
+
+```c++
+//只会插入一次
+vector<vector<int>> insert(vector<vector<int>>& intervals, vector<int>& newInterval) {
+    vector<vector<int>> res;
+    int left = newInterval[0];     
+    int right = newInterval[1];
+    bool inplace = false;       //只会插入一次
+    for(const auto& interval : intervals){
+        if(interval[0] > right){       //插入的条件，
+            if(!inplace){			   //之前没有被插入过	
+                res.push_back({left, right});
+                inplace = true;
+            }
+            res.push_back(interval);
+        }
+        else if(interval[1] < left)
+            res.push_back(interval);
+        //说明当前的interval和待插入的{left，right}有交集，更新插入区间
+        else{
+            left = min(left, interval[0]);    //更新左端
+            right = max(right, interval[1]);  //更新右端
+        }
+    }
+    // 如果 newInterval 还没有被插入到结果中，说明它在遍历结束后仍未被处理
+    if(!inplace)
+        res.push_back({left, right});
+    return res;
+}
+```
+
+10. [划分字母区间](https://leetcode.cn/problems/partition-labels/)
 
 > 给你一个字符串 `s` 。我们要把这个字符串划分为尽可能多的片段，同一字母最多出现在一个片段中。
 >
@@ -938,7 +1146,7 @@ vector<int> partitionLabels(string s) {
 }
 ```
 
-10. [监控二叉树](https://leetcode.cn/problems/binary-tree-cameras/)
+11. [监控二叉树](https://leetcode.cn/problems/binary-tree-cameras/)
 
 > 给定一个二叉树，我们在树的节点上安装摄像头。
 >
@@ -981,7 +1189,7 @@ public:
   };
 ```
 
-11. [无重叠区间](https://leetcode.cn/problems/non-overlapping-intervals/)
+12. [无重叠区间](https://leetcode.cn/problems/non-overlapping-intervals/)
 
 > 给定一个区间的集合 `intervals` ，其中 `intervals[i] = [starti, endi]` 。返回 *需要移除区间的最小数量，使剩余区间互不重叠* 。
 
@@ -1014,7 +1222,7 @@ public:
 
 
 
-### 三、队列&&栈
+### 三、队列&&栈&&堆
 
 1. 逆波兰表达式
 
@@ -1177,6 +1385,123 @@ int main() {
     return 0;
 }
 ```
+
+5. [每日温度](https://leetcode.cn/problems/daily-temperatures/)
+
+> 给定一个整数数组 `temperatures` ，表示每天的温度，返回一个数组 `answer` ，其中 `answer[i]` 是指对于第 `i` 天，下一个更高温度出现在几天后。如果气温在这之后都不会升高，请在该位置用 `0` 来代替。
+
+```c++
+输入: temperatures = [73,74,75,71,69,72,76,73]
+输出: [1,1,4,2,1,1,0,0]
+```
+
+```c++
+//利用栈存储 尚未遇到更大值 的元素值的下标，这样遇到更大值，则弹出求取差值即可。（栈中存储下标的温度值一定是递减，自栈底向上）
+vector<int> dailyTemperatures(vector<int>& temperatures) {
+    int n = temperatures.size();
+    vector<int> res(n, 0);
+    stack<int> s;
+    for(int i = 0; i < n; i++){
+        while(!s.empty() && temperatures[i] > temperatures[s.top()]){     //满足条件则一直循环！
+            int temp = s.top(); s.pop();
+            res[temp] = i - temp;       //求取temp的差值
+        }
+        s.push(i);
+    }
+    return res;
+}
+```
+
+6. [数据流的中位数](https://leetcode.cn/problems/find-median-from-data-stream/)
+
+> **中位数**是有序整数列表中的中间值。如果列表的大小是偶数，则没有中间值，中位数是两个中间值的平均值。
+>
+> - 例如 `arr = [2,3,4]` 的中位数是 `3` 。
+> - 例如 `arr = [2,3]` 的中位数是 `(2 + 3) / 2 = 2.5` 。
+>
+> 实现 MedianFinder 类:
+>
+> - `MedianFinder() `初始化 `MedianFinder` 对象。
+> - `void addNum(int num)` 将数据流中的整数 `num` 添加到数据结构中。
+> - `double findMedian()` 返回到目前为止所有元素的中位数。与实际答案相差 `10-5` 以内的答案将被接受。
+
+```c++
+/*
+过使用两个堆来高效地实现，一个大顶堆（存放较小一半的数）和一个小顶堆（存放较大一半的数）。
+通过维护这两个堆，确保大顶堆和小顶堆的大小平衡（两者的大小之差不超过 1）
+每次插入数字时，将其放入合适的堆，并且在堆的大小不平衡时进行调整。
+每次查询中位数时，如果堆大小相同，取两个堆顶的平均值；否则，取较大堆的堆顶作为中位数。
+2,3,4,5,6
+大顶堆：[4, 3, 2] （存放较小的数）
+小顶堆：[5, 6] （存放较大的数）
+*/
+class MedianFinder {
+public:
+    priority_queue<int, vector<int>, less<int>> qmin;       //大根堆
+    priority_queue<int, vector<int>, greater<int>> qmax;    //小根堆
+    MedianFinder() {
+        
+    }
+    
+    void addNum(int num) {
+        if(qmin.empty() || num <= qmin.top()){    //因为先进入小根堆
+            qmin.push(num);
+            if(qmin.size() - qmax.size() > 1){   //小根堆最多比大根堆数量多1
+                qmax.push(qmin.top());
+                qmin.pop();
+            }
+        }
+        else{
+            qmax.push(num);
+            if(qmax.size() - qmin.size() > 0){    //大根堆不会比小根堆多
+                qmin.push(qmax.top());
+                qmax.pop();
+            }
+        }
+    }
+    
+    double findMedian() {
+        if(qmin.size() > qmax.size())
+            return qmin.top();
+        else
+            return (qmin.top() + qmax.top()) / 2.0;
+    }
+};
+```
+
+7. [最长有效括号](https://leetcode.cn/problems/longest-valid-parentheses/)
+
+> 给你一个只包含 `'('` 和 `')'` 的字符串，找出最长有效（格式正确且连续）括号子串的长度。
+
+```c++
+输入：s = ")()())"
+输出：4
+```
+
+```c++
+//栈里存放的是括号的下标，栈底存放前一个无效匹配括号的下标，初始时栈中放 -1，表示前一个无效括号的索引。
+int longestValidParentheses(string s) {
+    int res = 0;
+    stack<int> stk;
+    stk.push(-1);
+    for(int i = 0; i < s.size(); i++){
+        if(s[i] == '('){    // 遇到'('，把下标存入栈中
+            stk.push(i);
+        }
+        else{
+            stk.pop();      // 遇到')'，弹出栈顶
+            //pop()后需要先判空，后面会用到top()
+            if(stk.empty()) 	
+                stk.push(i);   // 如果栈为空，说明无匹配，存入当前')'的下标
+            else
+                res = max(res, i - stk.top());    // 计算有效括号长度
+        }
+    }
+    return res;
+}
+```
+
+
 
 ### 四、数组
 
@@ -1457,7 +1782,7 @@ string minWindow(string s, string t) {
 }
 ```
 
-9. 移动零](https://leetcode.cn/problems/move-zeroes/)
+9. [移动零](https://leetcode.cn/problems/move-zeroes/)
 
 > 给定一个数组 `nums`，编写一个函数将所有 `0` 移动到数组的末尾，同时保持非零元素的相对顺序。
 >
@@ -1611,6 +1936,76 @@ vector<int> productExceptSelf(vector<int>& nums) {
     } 
     return res;
 }
+```
+
+13. [最长回文子串](https://leetcode.cn/problems/longest-palindromic-substring/)
+
+> 给你一个字符串 `s`，找到 `s` 中最长的 回文子串。
+
+```c++
+输入：s = "babad"
+输出："bab"
+```
+
+```c++
+pair<int, int> palindromeHelper(string s, int left, int right){
+    while(left >= 0 && right < s.size()){
+        if(s[left] == s[right]){
+            left--;
+            right++;
+        }
+        else
+            break;
+    }
+    return {left+1, right-1};  //注意，此时的left和right已经是不满足条件的，需要移动
+}
+string longestPalindrome(string s) {
+    int start = 0, end = 0;
+    for(int i = 1; i < s.size(); i++){
+        pair<int, int> a1 = palindromeHelper(s, i, i);
+        pair<int, int> a2 = palindromeHelper(s, i, i-1);
+        if(a1.second - a1.first > end - start){
+            start = a1.first;
+            end = a1.second;
+        } 
+        if(a2.second - a2.first > end - start){
+            start = a2.first;
+            end = a2.second;
+        } 
+    }
+    return s.substr(start, end - start + 1);
+}
+```
+
+14. [最大数](https://leetcode.cn/problems/largest-number/)
+
+> 给定一组非负整数 `nums`，重新排列每个数的顺序（每个数不可拆分）使之组成一个最大的整数。
+>
+> **注意：**输出结果可能非常大，所以你需要返回一个字符串而不是整数。
+
+```c++
+输入：nums = [10,2]
+输出："210"
+输入：nums = [3,30,34,5,9]
+输出："9534330" 
+```
+
+```c++
+class Solution {
+public:
+    //定义新的排序规则，
+    static bool comp(const int& a, const int& b){ //将成员函数设为 static,static 函数与类实例无关，因此可以直接通过类名或直接传递给 sort。(非静态成员函数是与具体对象绑定的，因此必须通过对象来调用它们。)
+        return to_string(a) + to_string(b) > to_string(b) + to_string(a);
+    }
+    string largestNumber(vector<int>& nums) {
+        string res;
+        sort(nums.begin(), nums.end(), comp);
+        if(nums[0] == 0) return "0";
+        for(int& num : nums)
+            res = res + to_string(num);
+        return res;
+    }
+};
 ```
 
 
@@ -1977,8 +2372,6 @@ public:
 };
 ```
 
-
-
 10. K个一组翻转链表
 
 > 给你链表的头节点 `head` ，每 `k` 个节点一组进行翻转，请你返回修改后的链表。
@@ -2021,10 +2414,9 @@ ListNode* reverseKGroup(ListNode* head, int k) {
     // Step 4: 返回翻转后的头节点
     return pre;
 }
-
 ```
 
-
+11. 
 
 ### 六、哈希表
 
@@ -2398,6 +2790,185 @@ bool isBalanced(TreeNode* root) {
         return abs((height(root->left) - height(root->right))) <= 1 && isBalanced(root->left) && isBalanced(root->right);  
 }
 ```
+
+5. [验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/)
+
+> 给你一个二叉树的根节点 `root` ，判断其是否是一个有效的二叉搜索树。
+>
+> **有效** 二叉搜索树定义如下：
+>
+> - 节点的左子树只包含 小于 当前节点的数。
+> - 节点的右子树只包含 **大于** 当前节点的数。
+> - 所有左子树和右子树自身必须也是二叉搜索树。
+
+```c++
+//中序遍历是由小到大
+bool isValidBST(TreeNode* root) {
+    stack<TreeNode*> s;
+    TreeNode *curr = root;
+    long long pre = LLONG_MIN;      //记录前一个值
+    while(!s.empty() || curr){
+        while(curr){
+            s.push(curr);
+            curr = curr->left;
+        }
+        curr = s.top(); s.pop();
+        
+        if(curr->val <= pre) return false;   //每次和前一个值进行比较
+        pre = curr->val;                     //更新
+        curr = curr->right;
+    }
+    return true;
+}
+```
+
+6. [从前序与中序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+
+> 给定两个整数数组 `preorder` 和 `inorder` ，其中 `preorder` 是二叉树的**先序遍历**， `inorder` 是同一棵树的**中序遍历**，请构造二叉树并返回其根节点。
+
+```c++
+输入: preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]
+输出: [3,9,20,null,null,15,7]
+```
+
+```c++
+unordered_map<int, int> inorder_map; //使用哈希表来帮助我们快速地定位根节点,键表示中序序列值，值表示其在中序序列中的位置，
+TreeNode* helper(vector<int>& preorder, vector<int>& inorder, int pre_left, int pre_right, int in_left, int in_right){
+    if(pre_left > pre_right || in_left > in_right) return nullptr;
+    // 先序遍历的第一个元素是当前子树的根节点
+    int root_val = preorder[pre_left];
+    TreeNode* root = new TreeNode(root_val);
+     // 找到根节点在中序遍历中的位置
+    int root_index_inorder = inorder_map[root_val];
+    // 计算左子树的大小
+    int left_size = root_index_inorder - in_left;
+    // 递归构造左子树
+    root->left = helper(preorder, inorder, pre_left+1, pre_left+left_size, in_left, root_index_inorder-1);
+    // 递归构造右子树
+    root->right = helper(preorder, inorder, pre_left+left_size+1, pre_right, root_index_inorder+1, in_right);
+    return root;
+}
+TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+    int n = preorder.size();
+    for(int i = 0; i < n; i++){
+        inorder_map[inorder[i]] = i;   //构建哈希表，快速定位中序序列中根节点位置，无需顺序遍历
+    }
+    return helper(preorder, inorder, 0, n-1, 0, n-1);
+}
+```
+
+7. [路径总和 III](https://leetcode.cn/problems/path-sum-iii/)
+
+> 给定一个二叉树的根节点 `root` ，和一个整数 `targetSum` ，求该二叉树里节点值之和等于 `targetSum` 的 **路径** 的数目。
+>
+> **路径** 不需要从根节点开始，也不需要在叶子节点结束，但是路径方向必须是向下的（只能从父节点到子节点）。
+
+```c++
+输入：root = [10,5,-3,3,2,null,11,3,-2,null,1], targetSum = 8
+输出：3
+```
+
+```c++
+/*
+如果在某条路径上，当前节点的前缀和为 currSum，那么路径上任何连续一段节点的和为 targetSum，即 currSum - targetSum 出现的次数就能表明当前节点之前的某个位置到当前节点的路径和等于 targetSum。
+通过记录每一个前缀和出现的次数来快速计算有多少个符合条件的路径<哈希表>。
+*/
+
+int dfs(TreeNode* root, int targetSum, unordered_map<long long,int>& prefix, long long currsum){
+    if(root == nullptr) return 0;
+    currsum += root->val;  // 更新当前的前缀和
+    int res = prefix[currsum - targetSum]; // 计算从当前节点到前面的某个节点的路径和是否等于 targetSum
+     // 更新前缀和哈希表
+    prefix[currsum]++;
+    // 递归遍历左右子树
+    res += dfs(root->left, targetSum, prefix, currsum);
+    res += dfs(root->right, targetSum, prefix, currsum);
+    // 回溯：撤销当前节点对前缀和的影响
+    prefix[currsum]--;
+    return res;
+}
+int pathSum(TreeNode* root, int targetSum) {
+    // 定义一个哈希表 prefixSumCount，其中键表示前缀和，值表示该前缀和出现的次数。
+    unordered_map<long long, int> prefix;
+    // 初始情况下，前缀和为 0 的情况出现 1 次，即空路径。
+    prefix[0] = 1;
+    return dfs(root, targetSum, prefix, 0);
+}
+```
+
+8. [二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
+
+> 二叉树中的 **路径** 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 **至多出现一次** 。该路径 **至少包含一个** 节点，且不一定经过根节点。**路径和** 是路径中各节点值的总和。
+>
+> 给你一个二叉树的根节点 `root` ，返回其 **最大路径和** 。
+
+```c++
+输入：root = [-10,9,20,null,null,15,7]
+输出：42
+```
+
+```c++
+/*
+对于每个节点，路径有几种可能：
+- 仅包含当前节点。
+- 包含当前节点和左子树的最大路径。
+- 包含当前节点和右子树的最大路径。
+- 包含当前节点、左子树和右子树的路径。
+我们的目标是找到包含任意节点的路径和的最大值。递归函数的返回值需要计算当前节点的最大贡献值，即：该节点加上它的左子树或右子树的最大路径和，而不允许同时包含左右子树（因为这样路径就分叉了，不再是一条路径）。在递归过程中，我们还需要记录全局的最大路径和。
+*/
+int maxpoint(TreeNode* root, int& res){
+    if(root == nullptr) return 0;
+    
+    // 递归计算左右子树的最大贡献值，负数的贡献值取0
+    int leftpoint = max(maxpoint(root->left, res), 0);
+    int rightpoint = max(maxpoint(root->right, res), 0);
+    
+    // 计算当前节点的路径和（包括当前节点、左子树和右子树）
+    int currpath = root->val + leftpoint + rightpoint;
+    // 更新全局最大路径和!!!
+    res = max(res, currpath);
+    
+    // 返回当前节点的最大贡献值（只能选择左子树或右子树的一条路径）
+    return root->val + max(leftpoint, rightpoint);
+}
+int maxPathSum(TreeNode* root) {
+    int res = INT_MIN;
+    maxpoint(root, res);
+    return res;
+}
+```
+
+9. [ 二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/)
+
+> 给你一棵二叉树的根节点，返回该树的 **直径** 。
+>
+> 二叉树的 **直径** 是指树中任意两个节点之间最长路径的 **长度** 。这条路径可能经过也可能不经过根节点 `root` 。
+>
+> 两节点之间路径的 **长度** 由它们之间边数表示。
+
+```c++
+输入：root = [1,2,3,4,5]
+输出：3
+解释：3 ，取路径 [4,2,1,3] 或 [5,2,1,3] 的长度。
+```
+
+```c++
+int lenPoint(TreeNode* node, int& res){
+    if(node == nullptr) return 0;
+    int leftpoint = lenPoint(node->left, res);
+    int rightpoint = lenPoint(node->right, res);
+    int currlen = leftpoint + rightpoint + 1;
+    res = max(res, currlen);
+    return max(leftpoint, rightpoint) + 1;
+}
+int diameterOfBinaryTree(TreeNode* root) {
+    int res = 1;
+    lenPoint(root, res);
+    return res-1;
+}
+```
+
+
 
 ### 八、回溯
 
