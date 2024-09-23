@@ -2013,6 +2013,50 @@ public:
 2. 排序
 
    - 快速排序
+   
+     ```c++
+     // 分区函数，返回基准值的正确下标; 每次能把基准值放到正确位置
+     int partition(vector<int>& arr, int left, int right){
+         int pivot = arr[left]; //选择最左边数作为基准
+         while(left < right){
+             // 注意先从右开始！！！选择的最左边数作为基准
+             // 从右往左寻找一个比 pivot 小的数，找到后将这个数放在 left 位置
+             while(left < right && arr[right] >= pivot) right--;
+             arr[left] = arr[right];
+             // 从左往右寻找一个比 pivot 大的数，找到后将这个数放在 right 位置
+             while(left < right && arr[left] < pivot) left++;
+             arr[right] = arr[left];
+         }
+         //把 pivot 放回正确位置
+         arr[left] = pivot;
+         return left;    //返回基准值的正确下标
+     }
+     
+     //递归
+     void quickSort(vector<int> arr, left, right){
+         if(left >= right) return;
+         int pivot = partition(arr, left, right);    // 获取基准位置
+         quickSort(arr, left, pivot-1);    // 递归排序基准左侧
+         quickSort(arr, pivot+1, right);   // 递归排序基准右侧
+     }
+     
+     //非递归，使用栈
+     void quickSort(vector<int> arr, left, right){
+         stack<pair<int, int>> stk;   // 创建一个栈，用来存储子数组的左右边界
+         stk.push({left, right});     // 初始压入整个数组的边界
+         while(!stk.empty()){
+             auto [l,r] = stk.top(); stk.pop();  // 取出当前子数组的左右边界
+             if(l < r){
+                 int pivot = partition(arr, l, r);   // 进行分区操作，得到基准元素的位置
+                 stk.push(arr, l, pivot-1);  // 将左边子数组的边界压入栈
+                 stk.push(arr, pivot+1, r);  // 将右边子数组的边界压入栈
+             }
+         }
+     }
+     ```
+   
+     
+   
    - 堆排序
 
 ### 五、链表
