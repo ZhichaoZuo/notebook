@@ -2008,6 +2008,45 @@ public:
 };
 ```
 
+15. [缺失的第一个正数](https://leetcode.cn/problems/first-missing-positive/)
+
+> 给你一个未排序的整数数组 `nums` ，请你找出其中没有出现的最小的正整数。
+>
+> 请你实现时间复杂度为 `O(n)` 并且只使用常数级别额外空间的解决方案。
+
+```c++
+输入：nums = [3,4,-1,1]
+输出：2
+输入：nums = [7,8,9,11,12]
+输出：1
+```
+
+注：使用原地哈希的方法，将每个正整数 `x` 放到索引 `x-1` 的位置上（放到正确位置上）
+
+1. 遍历数组，将每个正整数 `nums[i]` 移动到索引 `nums[i] - 1` 的位置。
+
+2. 在移动的过程中，忽略掉不在范围内的数（例如小于 1 或大于数组长度的数）。
+
+3. 再次遍历数组，找到第一个索引 `i`，使得 `nums[i]` 不等于 `i + 1`，则 `i + 1` 就是缺失的最小正整数。
+
+4. 如果所有的索引都符合条件，返回 `n + 1`，其中 `n` 是数组的长度。
+
+```c++
+int firstMissingPositive(vector<int>& nums) {
+    int n = nums.size();
+    for(int i = 0; i < n; i++){
+        //nums[nums[i] - 1] != nums[i],出现重复数字，已有在正确位置上则无需重排
+        while(nums[i] > 0  && nums[i] <= n && nums[nums[i] - 1] != nums[i])  //使用while循环遍历！
+            swap(nums[i], nums[nums[i] - 1]);
+    }
+    for(int i = 0; i < n; i++){
+        if(nums[i] != i + 1)
+            return i+1;
+    }
+    return n+1;  //如果所有的索引都符合条件，返回 n + 1
+}
+```
+
 
 
 2. 排序
@@ -2024,7 +2063,7 @@ public:
              while(left < right && arr[right] >= pivot) right--;
              arr[left] = arr[right];
              // 从左往右寻找一个比 pivot 大的数，找到后将这个数放在 right 位置
-             while(left < right && arr[left] < pivot) left++;
+             while(left < right && arr[left] <= pivot) left++;
              arr[right] = arr[left];
          }
          //把 pivot 放回正确位置
@@ -2211,7 +2250,7 @@ ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
         return nullptr;
     ListNode *ha = headA;  //不能改变链表的原始结构
     ListNode *hb = headB;
-    while(ha != hb){
+    while(ha != hb){  //ha结点==hb结点 或者 均为空（同时到达尾部 或 拼接后的尾部）
         ha = (ha == nullptr) ? headB : ha->next;
         hb = (hb == nullptr) ? headA : hb->next;
     }
@@ -2238,7 +2277,7 @@ ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
 }
 ```
 
-6. [环形链表](https://leetcode.cn/problems/linked-list-cycle-ii/)
+6. [环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/)
 
 > 给定一个链表的头节点  `head` ，返回链表开始入环的第一个节点。 *如果链表无环，则返回 `null`。*
 
@@ -2269,21 +2308,20 @@ public:
     ListNode *detectCycle(ListNode *head) {
         ListNode* fast = head;
         ListNode* slow = head;
-        while(fast != NULL && fast->next != NULL) {
+        while(fast && fast->next) {
             slow = slow->next;
             fast = fast->next->next;
             // 快慢指针相遇，此时从head 和 相遇点，同时查找直至相遇
             if (slow == fast) {
-                ListNode* index1 = fast;
-                ListNode* index2 = head;
-                while (index1 != index2) {
-                    index1 = index1->next;
-                    index2 = index2->next;
+                ListNode* temp = head;
+                while (temp != slow) {
+                    temp = temp->next;
+                    slow = slow->next;
                 }
-                return index2; // 返回环的入口
+                return temp; // 返回环的入口
             }
         }
-        return NULL;
+        return nullptr;
     }
 };
 
@@ -2460,7 +2498,100 @@ ListNode* reverseKGroup(ListNode* head, int k) {
 }
 ```
 
-11. 
+11. [回文链表](https://leetcode.cn/problems/palindrome-linked-list/)
+
+> 给你一个单链表的头节点 `head` ，请你判断该链表是否为回文链表。如果是，返回 `true` ；否则，返回 `false` 。
+
+```c++
+输入：head = [1,2,2,1]
+输出：true
+```
+
+```c++
+//遍历链表使用数组存储，再双指针遍历验证 O(n) O(n)
+// bool isPalindrome(ListNode* head) {
+//     vector<int> nums;
+//     while(head){
+//         nums.push_back(head->val);
+//         head = head->next;
+//     }
+//     for(int left = 0, right = nums.size() - 1; left < right; left++, right--){
+//         if(nums[left]!=nums[right]) return false;
+//     }
+//     return true;
+// }
+
+//翻转后半截链表，再遍历验证 O(n) O(1)
+bool isPalindrome(ListNode* head) {
+    if(head == nullptr || head->next == nullptr) return true;
+    ListNode *interNode= findInterNode(head);
+    ListNode *secondList = reverseList(interNode->next);
+    ListNode *l1 = head, *l2 = secondList;
+    while(l2){      //l2可能会比l1少一个结点（中间节点），使用l2判空即可，忽略中间节点
+        if(l1->val != l2->val) return false;
+        l1 = l1->next;
+        l2 = l2->next;
+    }
+    return true;
+}
+
+ListNode* findInterNode(ListNode* head){
+    ListNode* slow = head;
+    ListNode* fast = head->next;
+    while(fast && fast->next){
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    return slow;
+}
+ListNode* reverseList(ListNode* head){
+    ListNode* pre = nullptr;
+    ListNode* curr = head;
+    while(curr){
+        ListNode *nextnode = curr->next;
+        curr->next = pre;
+        pre = curr;
+        curr = nextnode;
+    }
+    return pre;
+}
+```
+
+12. [二叉树展开为链表](https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/)
+
+> 给你二叉树的根结点 `root` ，请你将它展开为一个单链表：
+>
+> - 展开后的单链表应该同样使用 `TreeNode` ，其中 `right` 子指针指向链表中下一个结点，而左子指针始终为 `null` 。
+> - 展开后的单链表应该与二叉树 [**先序遍历**](https://baike.baidu.com/item/先序遍历/6442839?fr=aladdin) 顺序相同。
+
+```c++
+输入：root = [1,2,5,3,4,null,6]
+输出：[1,null,2,null,3,null,4,null,5,null,6]
+```
+
+```c++
+//O(n) O(1)
+//对当前节点，如果存在左孩子，那么根据先序遍历后，右孩子会被替换为左孩子，那么右孩子的父节点变成了 原先左孩子中最后访问的（最右端）
+void flatten(TreeNode* root) {
+    TreeNode *curr = root;
+    while(curr){
+        if(curr->left){
+            TreeNode *preRight = curr->right;
+            TreeNode *preLeft = curr->left;
+            TreeNode *temp = preLeft;
+            while(temp->right){
+                temp = temp->right;  //找到当前右孩子的前驱结点
+            }
+            temp->right = preRight;  //放好右孩子位置，腾出右子节点位置
+            curr->right = preLeft;   //左孩子替换右孩子
+            curr->left = nullptr;    //左子节点置空
+        }
+        curr = curr->right;  //下一个节点，也就是先序遍历的下一个节点
+    }
+}
+```
+
+
 
 ### 六、哈希表
 
@@ -3009,6 +3140,31 @@ int diameterOfBinaryTree(TreeNode* root) {
     int res = 1;
     lenPoint(root, res);
     return res-1;
+}
+```
+
+10. [二叉树的最近公共祖先](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/)
+
+> 给定一个二叉树, 找到该树中两个指定节点的最近公共祖先。
+
+```c++
+输入：root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 4
+输出：5
+```
+
+```c++
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+    // 基本情况：如果当前节点为空，或者当前节点等于p或q（只要找到一个就立即返回当前节点，不再搜索）
+    if(root == nullptr || root == p || root == q)
+        return root;
+    // 在左子树和右子树中查找p和q
+    TreeNode *leftnode = lowestCommonAncestor(root->left, p, q);
+    TreeNode *rightnode = lowestCommonAncestor(root->right, p, q);
+    // 如果左子树和右子树都找到（只可能各有一个），当前节点是最近公共祖先
+    if(leftnode && rightnode)
+        return root;
+    // 如果只在一侧找到，返回该侧的节点
+    return leftnode ? leftnode : rightnode;
 }
 ```
 
@@ -3829,6 +3985,89 @@ int orangesRotting(vector<vector<int>>& grid){
 
 ```
 
+7. [最短的桥](https://leetcode.cn/problems/shortest-bridge/)
+
+> 给你一个大小为 `n x n` 的二元矩阵 `grid` ，其中 `1` 表示陆地，`0` 表示水域。
+>
+> **岛** 是由四面相连的 `1` 形成的一个最大组，即不会与非组内的任何其他 `1` 相连。`grid` 中 **恰好存在两座岛** 。
+>
+> 你可以将任意数量的 `0` 变为 `1` ，以使两座岛连接起来，变成 **一座岛** 。
+>
+> 返回必须翻转的 `0` 的最小数目。
+
+```c++
+输入：grid = [
+    [0,1],
+    [1,0]
+]
+输出：1
+输入：grid = [
+    [0,1,0],
+    [0,0,0],
+    [0,0,1]
+]
+输出：2
+```
+
+```c++
+//深度优先搜索出第一座岛的集合；对第一座岛所有陆地进行广搜，向外延伸的圈数就是最短距离。
+class Solution {
+public:
+    queue<pair<int,int>> q;  
+    vector<vector<int>> dirs = {{0,1}, {0, -1}, {1, 0}, {-1, 0}};
+    void dfs(vector<vector<int>>& grid, int i, int j){
+        if(i < 0 || i >= grid.size() || j < 0 || j >= grid[0].size() || grid[i][j] != 1) 
+            return;
+        q.push({i,j});
+        grid[i][j] = 2;  //标记已被搜过
+        for(auto& dir : dirs){
+            int x = i + dir[0];
+            int y = j + dir[1];
+            dfs(grid, x, y);
+        }
+    }
+
+    int shortestBridge(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        int flag = 0;
+        for(int i = 0; i < m; i++){
+            for(int j = 0; j < n; j++){
+                if(flag) break;      // 只需要找到第一座岛
+                if(grid[i][j] == 1){
+                    dfs(grid, i, j);
+                    flag = 1;
+                    break;
+                }
+            }
+         
+        }
+        int count = 0;
+        while(!q.empty()){
+            int size = q.size();
+            while(size--){
+                auto [i,j] = q.front(); q.pop();
+                for(auto& dir : dirs){
+                    int x = i + dir[0];
+                    int y = j + dir[1];
+                    if(x < 0 || x >= m || y < 0 || y >= n) continue;
+                    else{
+                        if(grid[x][y] == 1){   //连接到第二座岛
+                            return count;
+                        }
+                        else if(grid[x][y] == 0){
+                            q.push({x,y});
+                            grid[x][y] = 2;
+                        }
+                    }
+                }
+            }
+            count++;
+        }
+        return 0;
+    }
+};
+```
+
 
 
 ### 十、图论
@@ -3910,6 +4149,63 @@ bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
     }
     // 如果所有课程都访问过，返回true；否则，返回false
     return visited == numCourses;
+}
+```
+
+3. [阈值距离内邻居最少的城市](https://leetcode.cn/problems/find-the-city-with-the-smallest-number-of-neighbors-at-a-threshold-distance/)
+
+> 有 `n` 个城市，按从 `0` 到 `n-1` 编号。给你一个边数组 `edges`，其中 `edges[i] = [fromi, toi, weighti]` 代表 `fromi` 和 `toi` 两个城市之间的双向加权边，距离阈值是一个整数 `distanceThreshold`。
+>
+> 返回在路径距离限制为 `distanceThreshold` 以内可到达城市最少的城市。如果有多个这样的城市，则返回编号最大的城市。
+>
+> 注意，连接城市 ***i*** 和 ***j*** 的路径的距离等于沿该路径的所有边的权重之和。
+
+```c++
+输入：n = 4, edges = [[0,1,3],[1,2,1],[1,3,4],[2,3,1]], distanceThreshold = 4
+输出：3
+解释：城市分布图如上。
+每个城市阈值距离 distanceThreshold = 4 内的邻居城市分别是：
+城市 0 -> [城市 1, 城市 2] 
+城市 1 -> [城市 0, 城市 2, 城市 3] 
+城市 2 -> [城市 0, 城市 1, 城市 3] 
+城市 3 -> [城市 1, 城市 2] 
+城市 0 和 3 在阈值距离 4 以内都有 2 个邻居城市，但是我们必须返回城市 3，因为它的编号最大。
+```
+
+```c++
+//Floyd算法，计算任意两点之间的最短路径，使用动态规划来更新任意两点间的最短距离。 O(n^3) O(n^2)
+int findTheCity(int n, vector<vector<int>>& edges, int distanceThreshold) {
+    // 初始化距离矩阵，初始值为无穷大，自己到自己为 0
+    vector<vector<int>> dist(n, vector<int>(n, INT_MAX));
+    for(int i = 0; i < n; i++)
+        dist[i][i] = 0;
+    // 填充初始的距离信息
+    for(const auto& edge : edges){
+        int from = edge[0], to = edge[1], weight = edge[2];
+        dist[from][to] = weight;
+        dist[to][from] = weight;
+    }
+    // Floyd-Warshall 算法核心
+    for(int k = 0; k < n; k++){
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                if(dist[i][k] != INT_MAX && dist[k][j] != INT_MAX){  //防止溢出，但凡有一个通过中间节点的距离是INT_MAX，不用更新
+                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+                }
+            }
+        }
+    }
+    pair<int,int> res(INT_MAX, -1); //记录{结点，结点能到达的城市数量}
+    for(int i = 0; i < n; i++){
+        int dist_i = 0;     // 计算当前城市能在阈值内到达的城市数
+        for(int j = 0; j < n; j++){
+            if(dist[i][j] <= distanceThreshold)
+                dist_i++;
+        }
+        if(dist_i <= res.first)  // 更新记录，"="表示选择编号更大的城市
+            res = {dist_i, i};
+    }
+    return res.second;
 }
 ```
 
@@ -4084,4 +4380,56 @@ int pow(int n, int k, int MOD){
 }
 ```
 
-<u></u>
+### 十二、 其他
+
+1. 矩形面积
+
+> 给你 **二维** 平面上两个 **由直线构成且边与坐标轴平行/垂直** 的矩形，请你计算并返回两个矩形覆盖的总面积。
+>
+> 每个矩形由其 **左下** 顶点和 **右上** 顶点坐标表示：
+>
+> - 第一个矩形由其左下顶点 `(ax1, ay1)` 和右上顶点 `(ax2, ay2)` 定义。
+> - 第二个矩形由其左下顶点 `(bx1, by1)` 和右上顶点 `(bx2, by2)` 定义。
+
+```c++
+输入：ax1 = -3, ay1 = 0, ax2 = 3, ay2 = 4, bx1 = 0, by1 = -1, bx2 = 9, by2 = 2
+输出：45
+```
+
+```c++
+int computeArea(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2) {
+    int area1 = abs(ax1 - ax2) * abs(ay1 - ay2);
+    int area2 = abs(bx1 - bx2) * abs(by1 - by2);
+    int overlap_width = min(ax2, bx2) - max(ax1, bx1); 	//X轴投影的重叠线段
+    int overlap_height = min(ay2, by2) - max(ay1, by1);	//Y轴投影的重叠线段
+    int overlap_area = max(overlap_width, 0) * max(overlap_height, 0); //判断是否有重叠，有一个为负则无重叠。
+    int res = area1 + area2 - overlap_area;
+    return res;
+}
+```
+
+2. [用 Rand7() 实现 Rand10()](https://leetcode.cn/problems/implement-rand10-using-rand7/)
+
+> 给定方法 `rand7` 可生成 `[1,7]` 范围内的均匀随机整数，试写一个方法 `rand10` 生成 `[1,10]` 范围内的均匀随机整数。
+>
+> 你只能调用 `rand7()` 且不能调用其他方法。请不要使用系统的 `Math.random()` 方法。
+>
+> 每个测试用例将有一个内部参数 `n`，即你实现的函数 `rand10()` 在测试时将被调用的次数。请注意，这不是传递给 `rand10()` 的参数。
+
+```c++
+输入: 2
+输出: [2,8]
+输入: 3
+输出: [3,8,10]
+```
+
+```c++
+int rand10() {
+    int num = (rand7() - 1) * 7 + rand7();
+    while(num > 40){
+        num = (rand7() - 1) * 7 + rand7();
+    }
+    return num % 10 + 1;
+}
+```
+
