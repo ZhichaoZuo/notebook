@@ -3168,6 +3168,75 @@ TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
 }
 ```
 
+11. [验证二叉树](https://leetcode.cn/problems/validate-binary-tree-nodes/)
+
+> 二叉树上有 `n` 个节点，按从 `0` 到 `n - 1` 编号，其中节点 `i` 的两个子节点分别是 `leftChild[i]` 和 `rightChild[i]`。
+>
+> 只有 **所有** 节点能够形成且 **只** 形成 **一颗** 有效的二叉树时，返回 `true`；否则返回 `false`。
+>
+> 如果节点 `i` 没有左子节点，那么 `leftChild[i]` 就等于 `-1`。右子节点也符合该规则。
+>
+> 注意：节点没有值，本问题中仅仅使用节点编号。
+
+```c++
+输入：n = 4, leftChild = [1,-1,3,-1], rightChild = [2,-1,-1,-1]
+输出：true
+输入：n = 4, leftChild = [1,-1,3,-1], rightChild = [2,3,-1,-1]
+输出：false
+```
+
+```c++
+//将验证二叉树的过程分为两步：第一步找到二叉树的根节点，第二步从根节点开始对二叉树进行遍历，判断其是否为一颗有效的二叉树。
+bool validateBinaryTreeNodes(int n, vector<int>& leftChild, vector<int>& rightChild) {
+    vector<int> indegree(n, 0); //使用 indegree 数组来记录每个节点的入度
+    for(int i = 0; i < n; i++){
+        if(leftChild[i] != -1){
+            indegree[leftChild[i]]++;
+        }
+        if(rightChild[i] != -1){
+            indegree[rightChild[i]]++;
+        }
+    }
+    int root = -1;
+    for(int i = 0; i < n; i++){
+        if(indegree[i] == 0){
+            root = i;
+            break;
+        }
+    }
+    if(root == -1) return false;  //如果没有找到根节点，返回 false
+    vector<int> visited(n, 0);
+    //广度优先搜索
+    queue<int> q;
+    q.push(root);
+    visited[root] = 1;  // 标记已访问的节点，确保每个节点只被访问一次。
+    while(!q.empty()){
+        int node = q.front(); q.pop();
+        if(leftChild[node] != -1){
+            if(visited[leftChild[node]] == 1)  // 如果子节点已被访问（有环），返回 false
+                return false;
+            else{
+                q.push(leftChild[node]);
+                visited[leftChild[node]] = 1; // 标记已访问的节点，确保每个节点只被访问一次(无环)。
+            }
+        }
+        if(rightChild[node] != -1){
+            if(visited[rightChild[node]] == 1) 
+                return false;
+            else{
+                q.push(rightChild[node]);
+                visited[rightChild[node]] = 1;
+            }
+        }
+    }
+    for(int i = 0; i < n; i++){
+        if(visited[i] == 0)  // 如果有未访问的节点，返回 false
+        return false;
+    }
+    return true;
+}
+```
+
 
 
 ### 八、回溯
@@ -4095,6 +4164,8 @@ int main(){
 
 1. 图的深度优先搜索
 
+> 
+
 ```c++
 
 ```
@@ -4209,9 +4280,148 @@ int findTheCity(int n, vector<vector<int>>& edges, int distanceThreshold) {
 }
 ```
 
+4. [判断二分图](https://leetcode.cn/problems/is-graph-bipartite/)
+
+> 存在一个 **无向图** ，图中有 `n` 个节点。其中每个节点都有一个介于 `0` 到 `n - 1` 之间的唯一编号。给你一个二维数组 `graph` ，其中 `graph[u]` 是一个节点数组，由节点 `u` 的邻接节点组成。形式上，对于 `graph[u]` 中的每个 `v` ，都存在一条位于节点 `u` 和节点 `v` 之间的无向边。该无向图同时具有以下属性：
+>
+> - 不存在自环（`graph[u]` 不包含 `u`）。
+> - 不存在平行边（`graph[u]` 不包含重复值）。
+> - 如果 `v` 在 `graph[u]` 内，那么 `u` 也应该在 `graph[v]` 内（该图是无向图）
+> - 这个图可能不是连通图，也就是说两个节点 `u` 和 `v` 之间可能不存在一条连通彼此的路径。
+>
+> **二分图** 定义：如果能将一个图的节点集合分割成两个独立的子集 `A` 和 `B` ，并使图中的每一条边的两个节点一个来自 `A` 集合，一个来自 `B` 集合，就将这个图称为 **二分图** 。
+>
+> 如果图是二分图，返回 `true` ；否则，返回 `false` 。
+
+```c++
+输入：graph = [[1,2,3],[0,2],[0,1,3],[0,2]]
+输出：false
+输入：graph = [[1,3],[0,2],[1,3],[0,2]]
+输出：true
+```
+
+```c++
+//广度搜索，相邻节点染色不同
+bool isBipartite(vector<vector<int>>& graph) {
+    int n = graph.size();
+    vector<int> color(n, -1); // 用于存储每个节点的颜色状态，初始为 -1。
+    for(int i = 0; i < n; i++){ //寻找每一个联通分量的起点
+        if(color[i] == -1){     // If the node is uncolored
+            queue<int> q;
+            q.push(i);
+            color[i] = 0; // Start coloring with color 0
+            while(!q.empty()){
+                int node = q.front(); q.pop();
+                // Check all neighbors
+                for(int neighbor : graph[node]){
+                    if(color[neighbor] == -1){
+                        color[neighbor] = 1 - color[node]; // If neighbor is uncolored, color it with opposite color
+                        q.push(neighbor);
+                    }
+                    else if(color[neighbor] == color[node]){ // If neighbor has the same color, it's not bipartite
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+```
+
+4. [所有可能的路径](https://leetcode.cn/problems/all-paths-from-source-to-target/)
+
+> 给你一个有 `n` 个节点的 **有向无环图（DAG）**，请你找出所有从节点 `0` 到节点 `n-1` 的路径并输出（**不要求按特定顺序**）
+>
+>  `graph[i]` 是一个从节点 `i` 可以访问的所有节点的列表（即从节点 `i` 到节点 `graph[i][j]`存在一条有向边）。
+
+```c++
+输入：graph = [[1,2],[3],[3],[]]
+输出：[[0,1,3],[0,2,3]]
+解释：有两条路径 0 -> 1 -> 3 和 0 -> 2 -> 3
+输入：graph = [[4,3,1],[3,2,4],[3],[4],[]]
+输出：[[0,4],[0,3,4],[0,1,3,4],[0,1,2,3,4],[0,1,4]]
+```
+
+```c++
+void dfs(vector<vector<int>>& graph, int u, int n, vector<vector<int>>& res, vector<int>& temp){
+    if(u == n){
+        res.push_back(temp);
+        return;
+    }
+    for(auto& v : graph[u]){  // 遍历所有相邻节点
+        temp.push_back(v);    // 添加当前节点到路径
+        dfs(graph, v, n, res, temp); // 递归到下一个节点
+        temp.pop_back(); // 回溯，移除当前节点
+    }
+}
+vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
+    vector<vector<int>> res;
+    vector<int> temp;
+    temp.push_back(0); // 从节点 0 开始路径
+    dfs(graph, 0, graph.size()-1, res, temp);
+    return res;
+}
+```
 
 
-### 十一、数论
+
+### 十一、并查集
+
+1. [冗余连接](https://leetcode.cn/problems/redundant-connection/)
+
+> 树可以看成是一个连通且 **无环** 的 **无向** 图。
+>
+> 给定往一棵 `n` 个节点 (节点值 `1～n`) 的树中添加一条边后的图。添加的边的两个顶点包含在 `1` 到 `n` 中间，且这条附加的边不属于树中已存在的边。图的信息记录于长度为 `n` 的二维数组 `edges` ，`edges[i] = [ai, bi]` 表示图中在 `ai` 和 `bi` 之间存在一条边。
+>
+> 请找出一条可以删去的边，删除后可使得剩余部分是一个有着 `n` 个节点的树。如果有多个答案，则返回数组 `edges` 中最后出现的那个。
+
+```
+输入: edges = [[1,2], [1,3], [2,3]]
+输出: [2,3]
+输入: edges = [[1,2], [2,3], [3,4], [1,4], [1,5]]
+输出: [1,4]
+```
+
+```c++
+// n == edge.length(), 只有一条冗余的边
+class Solution {
+public:
+    vector<int> parent;
+    //路径压缩优化：为了加快查找操作，我们在 find 函数中采用了路径压缩的优化，即让每个节点指向它的祖先节点，从而减少树的高度，优化时间复杂度。
+    // 并查集的“查找”函数，带路径压缩优化
+    int find(int v){
+        if(parent[v] != v){
+            parent[v] = find(parent[v]);
+        }
+        return parent[v];
+    }
+    // 并查集的“合并”函数
+    void unionSets(int v1, int v2){
+        parent[find(v1)] = find(v2);
+    }
+    vector<int> findRedundantConnection(vector<vector<int>>& edges) {
+        int n = edges.size();
+        parent.resize(n+1);
+        // 初始化并查集，每个节点都是自己的父节点，孤立的集合
+        for(int i = 0; i <= n; i++)
+            parent[i] = i;
+        for(const auto& edge : edges){
+            int u = edge[0], v = edge[1];
+            // 如果 u 和 v 已经在同一个集合中，说明这条边会形成环
+            if(find(u) == find(v))
+                return edge; // 找到形成环的边
+             // 否则，将这两个节点合并
+            unionSets(u, v);
+        }
+        return {};
+    }
+};
+```
+
+
+
+### 十二、数论
 
 1. 质数的判断
 
@@ -4380,7 +4590,7 @@ int pow(int n, int k, int MOD){
 }
 ```
 
-### 十二、 其他
+### 十三、 其他
 
 1. 矩形面积
 
