@@ -2173,6 +2173,42 @@ public:
 };
 ```
 
+18. [寻找重复数](https://leetcode.cn/problems/find-the-duplicate-number/)
+
+> 给定一个包含 `n + 1` 个整数的数组 `nums` ，其数字都在 `[1, n]` 范围内（包括 `1` 和 `n`），可知至少存在一个重复的整数。
+>
+> 假设 `nums` 只有 **一个重复的整数** ，返回 **这个重复的数** 。
+>
+> 你设计的解决方案必须 **不修改** 数组 `nums` 且只用常量级 `O(1)` 的额外空间。
+
+```c++
+输入：nums = [1,3,4,2,2]
+输出：2
+```
+
+解：我们对 $nums $数组建图，每个位置 i 连一条 $i→nums[i]$ 的边。由于存在的重复的数字 target，因此 target 这个位置一定有起码两条指向它的边，因此整张图一定存在环，且我们要找到的 target 就是这个环的入口。等价于[环形链表II](#环形链表II)
+
+```c++
+//快慢指针：将数组视为一个链表，每个元素的值是链表的下一个节点的索引
+//由于数组的数字范围是 [1, n]，每个索引指向的是 nums[i]，这样可以想象数组形成了一个环，环的起点即为重复的数字。
+//确定环的起点：当快慢指针相遇后，我们可以再次使用一个从起点开始的慢指针（每次走一步）与之前的慢指针同步走，两者相遇的位置即为重复的数字。
+int findDuplicate(vector<int>& nums) {
+    int slow = 0, fast = 0;
+     // 快指针每次走两步，慢指针每次走一步
+    do{
+        slow = nums[slow];
+        fast = nums[nums[fast]];
+    }while(slow != fast);
+     // 找到环的入口，也就是重复的数字
+    int temp = 0;
+    while(temp != fast){
+        temp = nums[temp];
+        fast = nums[fast];
+    }
+    return temp;
+}
+```
+
 
 
 2. 排序
@@ -2403,7 +2439,7 @@ ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
 }
 ```
 
-6. [环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/)
+6. <a name="环形链表II"> </a>[环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/)
 
 > 给定一个链表的头节点  `head` ，返回链表开始入环的第一个节点。 *如果链表无环，则返回 `null`。*
 
@@ -2464,7 +2500,7 @@ public:
 ```c++
 输入：l1 = [2,4,3], l2 = [5,6,4]
 输出：[7,0,8]
-解释：342 + 465 = 807.
+解释：342 + 465 = 807
 ```
 
 ```c++
@@ -2717,7 +2753,25 @@ void flatten(TreeNode* root) {
 }
 ```
 
+13. [重排链表](https://leetcode.cn/problems/reorder-list/)
 
+> 给定一个单链表 `L` 的头节点 `head` ，单链表 `L` 表示为：
+>
+> ```
+> L0 → L1 → … → Ln - 1 → Ln
+> ```
+>
+> 请将其重新排列后变为：
+>
+> ```
+> L0 → Ln → L1 → Ln - 1 → L2 → Ln - 2 → …
+> ```
+>
+> 不能只是单纯的改变节点内部的值，而是需要实际的进行节点交换。
+
+解法一： 线性表存储链表节点（随机访问链表节点），再从首尾进行链表重建
+
+解法二：拆分链表（一分为二，快慢指针） + 链表翻转（后半部分） + 合并链表
 
 ### 六、哈希表
 
@@ -3817,6 +3871,130 @@ public:
 };
 ```
 
+13. [N 皇后](https://leetcode.cn/problems/n-queens/)
+
+> 按照国际象棋的规则，皇后可以攻击与之处在同一行或同一列或同一斜线上的棋子。
+>
+> **n 皇后问题** 研究的是如何将 `n` 个皇后放置在 `n×n` 的棋盘上，并且使皇后彼此之间不能相互攻击。
+>
+> 给你一个整数 `n` ，返回所有不同的 **n 皇后问题** 的解决方案。
+>
+> 每一种解法包含一个不同的 **n 皇后问题** 的棋子放置方案，该方案中 `'Q'` 和 `'.'` 分别代表了皇后和空位。
+
+```c++
+输入：n = 4
+输出：[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]
+输入：n = 1
+输出：[["Q"]]
+```
+
+```c++
+vector<vector<string>> res;
+// 检查是否可以在 (row, col) 位置放置皇后
+bool isValid(const vector<string>& temp, int row, int col, int n){
+    // 检查列是否有皇后
+    for(int i = 0; i < row; i++)
+        if(temp[i][col] == 'Q')  return false;
+    // 检查左上对角线是否有皇后
+    for(int i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--)
+        if(temp[i][j] == 'Q')  return false;
+    // 检查右上对角线是否有皇后
+    for(int i = row - 1, j = col + 1; i >= 0 && j < n; i--, j++)
+        if(temp[i][j] == 'Q')  return false;
+    return true;
+}
+// 回溯函数，逐行放置皇后
+void backtrack(vector<string>& temp, int row, int n){
+    if(row == n){ 		// 如果所有皇后都放置好了，保存结果
+        res.push_back(temp);
+        return;
+    }
+    // 尝试在当前行的每一列放置皇后
+    for(int j = 0; j < n; j++){
+        if(isValid(temp, row, j, n)){  // 如果合法，放置皇后
+            temp[row][j] = 'Q'; 
+            backtrack(temp, row+1, n); // 递归处理下一行
+            temp[row][j] = '.';  // 撤销放置，回溯
+        }
+    }
+}
+// 解决 N 皇后问题
+vector<vector<string>> solveNQueens(int n){
+    vector<string> temp(n, string(n, '.'));
+    backtrack(temp, 0, n);
+    return res;
+}
+```
+
+14. [解数独](https://leetcode.cn/problems/sudoku-solver/)
+
+> 编写一个程序，通过填充空格来解决数独问题。
+>
+> 数独的解法需 **遵循如下规则**：
+>
+> 1. 数字 `1-9` 在每一行只能出现一次。
+> 2. 数字 `1-9` 在每一列只能出现一次。
+> 3. 数字 `1-9` 在每一个以粗实线分隔的 `3x3` 宫内只能出现一次。（请参考示例图）
+>
+> 数独部分空格内已填入了数字，空白格用 `'.'` 表示。
+>
+> `board.length == 9`, `board[i].length == 9`, `board[i][j]` 是一位数字或者 `'.'`, 题目数据 **保证** 输入数独仅有一个解
+
+```c++
+// 检查在给定的行、列、3x3小方格中是否可以放置当前的数字 value
+bool isValid(vector<vector<char>>& board, int row, int col, char value) {
+    // 检查当前列是否有相同的数字
+    for(int i = 0; i < 9; i++)
+        if(board[i][col] == value) return false;
+
+    // 检查当前行是否有相同的数字
+    for(int j = 0; j < 9; j++)
+        if(board[row][j] == value) return false;
+
+    // 计算当前 3x3 小方格的起始位置 (每个 3x3 宫格)
+    int start_row = (row / 3) * 3, start_col = (col / 3) * 3;
+
+    // 检查当前 3x3 小方格是否有相同的数字
+    for(int i = start_row; i < start_row + 3; i++) {
+        for(int j = start_col; j < start_col + 3; j++) {
+            if(board[i][j] == value) return false;
+        }
+    }
+    return true; // 合法位置，可以放置数字
+}
+
+// 回溯算法的核心函数，递归地尝试填入数字
+bool backtrack(vector<vector<char>>& board) {
+    int n = board.size(); // 棋盘的大小（这里默认是9x9数独）
+
+    // 遍历整个棋盘的每个位置
+    for(int i = 0; i < 9; i++) {
+        for(int j = 0; j < 9; j++) {
+            // 如果当前格子是空的 ('.')，需要填入数字
+            if(board[i][j] == '.') {
+                // 尝试填入 '1' 到 '9'
+                for(char k = '1'; k <= '9'; k++) {
+                    // 检查当前数字是否可以放置在该位置
+                    if(isValid(board, i, j, k)) {
+                        board[i][j] = k; // 填入数字
+                        // 继续递归求解下一个空格
+                        if(backtrack(board)) return true; //如果递归调用返回 true，说明整个棋盘已经填充完毕且符合数独规则，可以立即结束递归。
+                        board[i][j] = '.'; // 回溯，撤销当前选择
+                    }
+                }
+                return false; // 如果没有可行的数字，则返回 false，进行回溯
+            }
+        }
+    }
+    return true; // 全部填满，数独已成功解决
+}
+
+// 调用回溯函数求解数独
+bool solveSudoku(vector<vector<char>>& board) {
+     return backtrack(board);
+}
+```
+
 
 
 ### 九、矩阵
@@ -4515,6 +4693,62 @@ public:
         return cost;
     }
 };
+```
+
+6. [ 网络延迟时间](https://leetcode.cn/problems/network-delay-time/)
+
+> 有 `n` 个网络节点，标记为 `1` 到 `n`。
+>
+> 给你一个列表 `times`，表示信号经过 **有向** 边的传递时间。 `times[i] = (ui, vi, wi)`，其中 `ui` 是源节点，`vi` 是目标节点， `wi` 是一个信号从源节点传递到目标节点的时间。
+>
+> 现在，从某个节点 `K` 发出一个信号。需要多久才能使所有节点都收到信号？如果不能使所有节点收到信号，返回 `-1` 
+
+```c++
+输入：times = [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2
+输出：2
+输入：times = [[1,2,1]], n = 2, k = 2
+输出：-1
+```
+
+```c++
+//单原最短路径算法Dijkstra
+int networkDelayTime(vector<vector<int>>& times, int n, int k) {
+    int max_dist = 0;
+    const int inf = INT_MAX / 2;
+    vector<vector<int>> grid(n + 1, vector<int>(n+1, inf)); // 建立邻接矩阵并初始化为最大值，表示节点间无边（无路径）
+    for(auto& time : times){
+        int u = time[0], v = time[1], w = time[2];
+        grid[u][v] = w;
+    }
+    vector<int> dist(n+1, inf);
+    dist[k] = 0; // 假设从第k个节点出发
+    vector<bool> visited(n+1, false); // visited 数组标记某个节点是否已确定最短路径
+    // 进行 V 次循环，每次找到未访问的距离最小的节点
+    for(int i = 1; i <= n; i++){
+        int cur = -1;
+        int min_val = inf;
+        // 遍历所有节点，找到距离最小的未访问节点
+        for(int j = 1; j <=n; j++){
+            if(!visited[j] && dist[j] < min_val){
+                min_val = dist[j];
+                cur = j;
+            }
+        }
+        if(cur == -1) break;
+        visited[cur] = true; // 标记当前节点已访问
+        // 更新从当前节点出发的所有邻接节点的最短路径
+        for(int j = 1; j <= n; j++){
+            if(grid[cur][j] + min_val < dist[j]){
+                dist[j] = grid[cur][j] + min_val;
+            }
+        }
+    }
+    for(int i = 1; i <= n; i++){
+        if(dist[i] == inf) return -1;
+        max_dist = max(max_dist, dist[i]);
+    }
+    return max_dist;
+}
 ```
 
 
