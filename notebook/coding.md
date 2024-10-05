@@ -2047,12 +2047,138 @@ int firstMissingPositive(vector<int>& nums) {
 }
 ```
 
+16. [颜色分类](https://leetcode.cn/problems/sort-colors/)
+
+> 给定一个包含红色、白色和蓝色、共 `n` 个元素的数组 `nums` ，**[原地](https://baike.baidu.com/item/原地算法)** 对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
+> 我们使用整数 `0`、 `1` 和 `2` 分别表示红色、白色和蓝色。
+> 必须在不使用库内置的 sort 函数的情况下解决这个问题。
+
+```c++
+输入：nums = [2,0,2,1,1,0]
+输出：[0,0,1,1,2,2]
+```
+
+```c++
+//单指针，两次遍历分别把0和1放在正确位置上
+void sortColors(vector<int>& nums) {
+    int n = nums.size();
+    int ptr = 0;
+  	//从0开始，将0放在正确位置上
+    for(int i = 0; i < n; i++){
+        if(nums[i] == 0){
+            swap(nums[i], nums[ptr]);
+            ptr++;
+        }
+    }
+  	//从ptr开始即可，将1放在正确位置上
+    for(int i = ptr; i < n; i++){
+        if(nums[i] == 1){
+            swap(nums[i], nums[ptr]);
+            ptr++;
+        }
+    }
+}
+```
+
+```c++
+//三指针遍历数组（一次），
+void sortColors(vector<int> &nums){
+    int n = nums.size();
+    int left = 0, curr = 0, right = n - 1;
+    while(curr <= right){
+        if(nums[curr] == 0){
+            swap(nums[curr],nums[left]);
+            curr++;    //curr需要向前移动
+            left++;
+        }
+        else if(nums[curr] == 1){
+            curr++;
+        }
+        else{
+            swap(nums[curr], nums[right]);
+            right--;     //curr无需向前移动，因为换过来的right处可能还是2
+        }
+    }
+}
+```
+
+17. [三数之和](https://leetcode.cn/problems/3sum/)
+
+> 给你一个整数数组 `nums` ，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k` ，同时还满足 `nums[i] + nums[j] + nums[k] == 0` 。请你返回所有和为 `0` 且不重复的三元组。
+>
+> **注意：**答案中不可以包含重复的三元组。
+
+```c++
+vector<vector<int>> threeSum(vector<int>& nums) {
+  	int n = nums.size();
+    sort(nums.begin(), nums.end());
+    vector<vector<int>> res;
+    for(int i = 0; i < n - 2; i++){
+        if(i > 0 && nums[i] == nums[i-1]) continue;   //注意不能重复！
+        if(nums[i]+nums[i+1]+nums[i+2] > 0) break;
+        if(nums[i] + nums[n-1] + nums[n-2] < 0) continue;
+        int left = i + 1, right = nums.size() - 1;
+        while(left < right){
+            if(nums[left] + nums[right] == -nums[i]){
+                res.push_back({nums[i], nums[left], nums[right]});
+              	//时刻保持left<right ！！！
+                while(left < right && nums[left] == nums[left + 1]) left++;   
+                while(left < right && nums[right] == nums[right - 1]) right--;
+                left++;right--;   //得继续变更！
+            }
+            else if(nums[left] + nums[right] < -nums[i])
+                left++;
+            else
+                right--;
+        }
+    }
+    return res;
+}
+```
+
+```c++
+//四数之和
+class Solution {
+public:
+    vector<vector<int>> fourSum(vector<int>& nums, int target) {
+        vector<vector<int>> res;
+        sort(nums.begin(), nums.end());
+        int n = nums.size();
+        for(int i = 0; i < n - 3; i++){
+            if((long)nums[i]+nums[i+1]+nums[i+2]+nums[i+3] > target) break;
+            if((long)nums[i]+nums[n-1]+nums[n-2]+nums[n-3] < target) continue;
+            if(i > 0 && nums[i] == nums[i-1]) continue;
+            for(int j = i+1; j < n - 2; j++){
+                if((long)nums[i]+nums[j]+nums[j+1]+nums[j+2] > target) break;
+                if((long)nums[i]+nums[j]+nums[n-1]+nums[n-2] < target) continue;
+                if(j > (i+1) && nums[j] == nums[j-1]) continue;
+                int left = j + 1, right = n - 1;
+                while(left < right){
+                    if((long)nums[i] + nums[j] + nums[left] + nums[right] == target){
+                        res.push_back({nums[i], nums[j], nums[left], nums[right]});
+                        while(left < right && nums[left] == nums[left+1]) left++;
+                        left++;
+                        while(left < right && nums[right] == nums[right-1]) right--;
+                        right--;
+                    }
+                    else if((long)nums[i] + nums[j] + nums[left] + nums[right] < target)
+                        left++;
+                    else
+                        right--;
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
 
 
 2. 排序
 
    - 快速排序
-   
+
      ```c++
      // 分区函数，返回基准值的正确下标; 每次能把基准值放到正确位置
      int partition(vector<int>& arr, int left, int right){
@@ -2093,9 +2219,9 @@ int firstMissingPositive(vector<int>& nums) {
          }
      }
      ```
-   
+
      
-   
+
    - 堆排序
 
 ### 五、链表
@@ -2701,36 +2827,7 @@ int fourSumCount(vector<int>& nums1, vector<int>& nums2, vector<int>& nums3, vec
 }
 ```
 
-4. [三数之和](https://leetcode.cn/problems/3sum/)
 
-> 给你一个整数数组 `nums` ，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k` ，同时还满足 `nums[i] + nums[j] + nums[k] == 0` 。请你返回所有和为 `0` 且不重复的三元组。
->
-> **注意：**答案中不可以包含重复的三元组。
-
-```c++
-vector<vector<int>> threeSum(vector<int>& nums) {
-    sort(nums.begin(), nums.end());
-    vector<vector<int>> res;
-    for(int i = 0; i < nums.size() - 2; i++){
-        if(i > 0 && nums[i] == nums[i-1]) continue;   //注意不能重复！
-        int left = i + 1, right = nums.size() - 1;
-        while(left < right){
-            if(nums[left] + nums[right] == -nums[i]){
-                res.push_back({nums[i], nums[left], nums[right]});
-              	//时刻保持left<right ！！！
-                while(left < right && nums[left] == nums[left + 1]) left++;   
-                while(left < right && nums[right] == nums[right - 1]) right--;
-                left++;right--;   //得继续变更！
-            }
-            else if(nums[left] + nums[right] < -nums[i])
-                left++;
-            else
-                right--;
-        }
-    }
-    return res;
-}
-```
 
 5. [字母异位词分组](https://leetcode.cn/problems/group-anagrams/)
 
@@ -4362,6 +4459,62 @@ vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
     dfs(graph, 0, graph.size()-1, res, temp);
     return res;
 }
+```
+
+5. [连接所有点的最小费用](https://leetcode.cn/problems/min-cost-to-connect-all-points/)
+
+> 给你一个`points` 数组，表示 2D 平面上的一些点，其中 `points[i] = [xi, yi]` 。
+>
+> 连接点 `[xi, yi]` 和点 `[xj, yj]` 的费用为它们之间的 **曼哈顿距离** ：`|xi - xj| + |yi - yj|` ，其中 `|val|` 表示 `val` 的绝对值。
+>
+> 请你返回将所有点连接的最小总费用。只有任意两点之间 **有且仅有** 一条简单路径时，才认为所有点都已连接。
+
+```c++
+输入：points = [[0,0],[2,2],[3,10],[5,2],[7,0]]
+输出：20
+```
+
+```c++
+//稠密图，Prim算法求最小生成树
+class Solution {
+public:
+    int distance(vector<int>& point1, vector<int>& point2){
+        return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1]);
+    }
+    int minCostConnectPoints(vector<vector<int>>& points) {
+        int cost = 0;
+        int n = points.size();
+        vector<vector<int>> grid(n, vector<int>(n, INT_MAX));
+        for(int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                int d = distance(points[i], points[j]);
+                grid[i][j] = d;
+                grid[j][i] = d;
+            }
+        }
+        vector<int> dist(n, INT_MAX);
+        vector<bool> visited(n, false);
+        dist[0] = 0;
+        for(int i = 0; i < n; i++){
+            int cur = -1;
+            int min_val = INT_MAX;
+            for(int j = 0; j < n; j++){
+                if(!visited[j] && dist[j] < min_val){
+                    min_val = dist[j];
+                    cur = j;
+                }
+            }
+            visited[cur] = true;
+            cost += min_val;
+            for(int j = 0; j < n; j++){
+                if(!visited[j] && grid[cur][j] < dist[j]){
+                    dist[j] = grid[cur][j];
+                }
+            }
+        }
+        return cost;
+    }
+};
 ```
 
 
